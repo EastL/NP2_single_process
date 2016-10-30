@@ -5,14 +5,15 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include "shell.h"
 
 
 int main()
 {
 	int sockfd;
 	struct sockaddr_in mysocket;
-	char *welcome = "****************************************\n** Welcome to the information server. **\n****************************************\n%";
-	char *shellsign = "%";
 
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -30,9 +31,28 @@ int main()
 		struct sockaddr_in client_socket;
 		int cl_len = sizeof(client_socket);
 
-		clientfd = accept(sockfd, (struct sockaddr*)&client_socket, &cl_len);
+		if (clientfd = accept(sockfd, (struct sockaddr*)&client_socket, &cl_len) < 0)
+		{
+			printf("Accept error!");
+			continue;
+		}
 
-		send(clientfd, welcome, strlen(welcome), 0);
+		int chpid = fork();
+
+		if (chpid)
+		{
+			int status;
+			int wpid = wait(&status);
+			printf("wait pid %d, status %d\n", wpid, status);
+		}
+		
+		else
+		{
+			shell(clientfd);
+			close(clientfd);
+			return 0;
+		}
+		//send(clientfd, welcome, strlen(welcome), 0);
 
 	}
 }
