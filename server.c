@@ -31,7 +31,7 @@ int main()
 		struct sockaddr_in client_socket;
 		int cl_len = sizeof(client_socket);
 
-		if (clientfd = accept(sockfd, (struct sockaddr*)&client_socket, &cl_len) < 0)
+		if ((clientfd = accept(sockfd, (struct sockaddr*)&client_socket, &cl_len)) < 0)
 		{
 			printf("Accept error!");
 			continue;
@@ -52,7 +52,5 @@ int main()
 			close(clientfd);
 			return 0;
 		}
-		//send(clientfd, welcome, strlen(welcome), 0);
-
 	}
 }
