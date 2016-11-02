@@ -6,17 +6,14 @@
 
 int main()
 {
-	char *buf = "cat  ls  cd  aaa |4";
+	char buf[] = "cat  ls  cd  aaa |4";
 	char *del = " ";
 	char **array;
 	char *save;
 	
 	int res;
+	int c;
 
-	char *t = strtok(buf, del);
-	printf("h\n");
-	char *s = strtok_r(buf, del, &save);
-	printf("h\n");
-	//split(&array, buf, del);
-	//printf("%s\n", array[0]);
+	split(&array, buf, del, &c);
+	printf("%s\n", array[1]);
 }

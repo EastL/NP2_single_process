@@ -5,8 +5,8 @@
 
 int main()
 {
-	char *buf = "cat |100";
-	char *cmp = "\\|[[:digit:]]+";
+	char *buf = "cat |a";
+	char *cmp = "\\|";
 	int res;
 
 	res = regular_match(buf, cmp);

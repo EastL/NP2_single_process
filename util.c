@@ -3,17 +3,25 @@
 #include <string.h>
 #include <regex.h>
 
-void split(char ***arr, char *str, const char *del)
+void split(char ***arr, char *str, const char *del, int *count)
 {
+	int _count = 0;
+	char **_arr = malloc(sizeof(char) * 5000);
+
 	char *save;
-	printf("hello\n");
 	char *s = strtok_r(str, del, &save);
 
 	while (s != NULL)
 	{
-		**arr++ = s;
+		int __count = strlen(s) + 1;
+		*(_arr + _count) = malloc(sizeof(char) * __count);
+		strncpy(*(_arr + _count), s, __count);
 		s = strtok_r(NULL, del, &save);
+		_count++;
 	}
+
+	*count = _count;
+	*arr = _arr;
 }
 
 int regular_match(char *str, char *reg_str)

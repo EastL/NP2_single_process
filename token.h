@@ -5,6 +5,7 @@
 #define PIPE 1
 #define REDIR 2
 #define NEWLINE 3
+#define PIPEN 4
 
 struct __token
 {
