@@ -19,3 +19,9 @@ int get_token_type(char *str)
 		return CMDF;
 }
 
+void tokenizer(int cfd)
+{
+	char *buf = malloc(sizeof(char) * 10010);
+	read(STDIN_FILENO, buf, 10010);
+	write(STDOUT_FILENO, buf, strlen(buf));
+}

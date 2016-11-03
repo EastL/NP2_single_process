@@ -5,11 +5,12 @@
 #include <unistd.h>
 #include "shell.h"
 #include "command.h"
+#include "token.h"
 
-void parse(cmd_node *list, char *buffer)
+void parse(int sfd, cmd_node *cmd_list)
 {
 	//printf("parsing...\n");
 	
-	
+	tokenizer(sfd);
 	return;
 }

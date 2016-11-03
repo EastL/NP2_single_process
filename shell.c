@@ -44,11 +44,8 @@ void shell(int client_fd)
 	{
 		write(STDOUT_FILENO, shellsign, strlen(shellsign));
 
-		//read line
-		int bufsize = read(STDIN_FILENO, line, 10000);
-
-		//parsing line
-		parse(cmd_list, line);
+		//read and parsing line
+		parse(client_fd, cmd_list);
 
 		//execute process
 	} while(1);

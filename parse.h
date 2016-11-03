@@ -2,5 +2,5 @@
 #define __PARSE__
 #include "command.h"
 
-void parse(cmd_node *list, char *buffer);
+void parse(int sfd, cmd_node *cmd_list);
 #endif

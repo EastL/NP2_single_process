@@ -14,9 +14,9 @@ struct __token
 	struct __token *next;	
 };
 
-typedef __token token_node; 
+typedef struct __token token_node; 
 
-void tokenizer();
+void tokenizer(int cfd);
 int get_token_type(char *str);
 
 #endif
