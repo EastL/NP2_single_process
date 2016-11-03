@@ -16,7 +16,10 @@ struct __token
 
 typedef struct __token token_node; 
 
+void push_node(token_node **node);
+token_node *pull_node();
 void tokenizer(int cfd);
 int get_token_type(char *str);
+void print_node();
 
 #endif

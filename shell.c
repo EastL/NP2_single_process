@@ -26,23 +26,14 @@ void shell(int client_fd)
 
 	printf("accept client %d\n", client_fd);
 
-	//redirect stdin stdout stderr to socket
-	close(STDIN_FILENO);
-	close(STDOUT_FILENO);
-	close(STDERR_FILENO);
-
-	dup(client_fd);
-	dup(client_fd);
-	dup(client_fd);
-
 	//welcome msg
-	write(STDOUT_FILENO, welcome, strlen(welcome));
+	write(client_fd, welcome, strlen(welcome));
 
 	line = malloc(sizeof(char) * 10010);
 
 	do
 	{
-		write(STDOUT_FILENO, shellsign, strlen(shellsign));
+		write(client_fd, shellsign, strlen(shellsign));
 
 		//read and parsing line
 		parse(client_fd, cmd_list);

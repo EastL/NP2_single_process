@@ -5,6 +5,9 @@
 #include "util.h"
 #include "token.h"
 
+static token_node *front = NULL;
+static token_node *rear = NULL;
+
 int get_token_type(char *str)
 {
 	if (regular_match(str, "\\|[[:digit:]]+") == 1)
@@ -19,9 +22,60 @@ int get_token_type(char *str)
 		return CMDF;
 }
 
+void push_node(token_node **node)
+{
+	if (front == NULL && rear == NULL)
+		front = rear  = *node;
+	else
+	{
+		rear->next = *node;
+		rear = *node;
+	}
+}
+
+token_node *pull_node()
+{
+	if (front == NULL)
+		return NULL;
+	else
+	{
+		token_node *temp = front;
+		front = front->next;
+		return temp;
+	}
+}
+
+void print_node()
+{
+	token_node *t = front;
+	while(t != NULL)
+	{
+		printf("%s type:%d\n", t->token, t->token_type);
+		t = t->next;
+	}
+}
+
 void tokenizer(int cfd)
 {
 	char *buf = malloc(sizeof(char) * 10010);
-	read(STDIN_FILENO, buf, 10010);
-	write(STDOUT_FILENO, buf, strlen(buf));
+	size_t token_n;
+	char **token_array;
+	size_t i;
+
+	read(cfd, buf, 10010);
+	
+	split(&token_array, buf, " ", &token_n);
+
+	for (i = 0; i < token_n; i++)
+	{
+		token_node *tnode = malloc(sizeof(token_node));
+		tnode->token = malloc(sizeof(char) * (strlen(token_array[i]) + 1));
+		strncpy(tnode->token, token_array[i], strlen(token_array[i]));
+		tnode->token_type = get_token_type(token_array[i]);
+		tnode->next = NULL;
+			
+		push_node(&tnode);
+	}
+
+	//print_node();
 }

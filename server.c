@@ -20,7 +20,7 @@ int main()
 	bzero(&mysocket, sizeof(mysocket));
 	mysocket.sin_family = AF_INET;
 	mysocket.sin_addr.s_addr = INADDR_ANY;
-	mysocket.sin_port = htons(3421);
+	mysocket.sin_port = htons(3420);
 
 	bind(sockfd, (struct sockaddr*) &mysocket, sizeof(mysocket));
 	listen(sockfd, 20);

@@ -3,17 +3,20 @@
 #include <string.h>
 #include <regex.h>
 
-void split(char ***arr, char *str, const char *del, int *count)
+void split(char ***arr, char *str, const char *del, size_t *count)
 {
-	int _count = 0;
+	size_t _count = 0;
+	char buf[10010];
 	char **_arr = malloc(sizeof(char) * 5000);
 
+	strncpy(buf, str, 10010);
+
 	char *save;
-	char *s = strtok_r(str, del, &save);
+	char *s = strtok_r(buf, del, &save);
 
 	while (s != NULL)
 	{
-		int __count = strlen(s) + 1;
+		size_t __count = strlen(s) + 1;
 		*(_arr + _count) = malloc(sizeof(char) * __count);
 		strncpy(*(_arr + _count), s, __count);
 		s = strtok_r(NULL, del, &save);
