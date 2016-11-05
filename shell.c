@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
+#include <sys/wait.h>
 #include <string.h>
 #include <unistd.h>
 #include "shell.h"
@@ -22,7 +23,7 @@ void shell(int client_fd)
 	}
 
 	//set env
-	setenv("PATH", "bin:.", 1);
+	//setenv("PATH", "bin:.", 1);
 
 	printf("accept client %d\n", client_fd);
 
@@ -31,6 +32,23 @@ void shell(int client_fd)
 
 	line = malloc(sizeof(char) * 10010);
 
+/*
+	char *argv[3];
+	argv[0] = "ls";
+	argv[1] = "-al";
+	argv[2] = NULL;
+	int pid = fork();
+	if (pid == 0)
+	{
+		execvp(argv[0], argv);
+	}
+	else
+	{
+		int status;
+		wait(&status);
+		
+	}
+*/
 	do
 	{
 		write(client_fd, shellsign, strlen(shellsign));
@@ -40,4 +58,5 @@ void shell(int client_fd)
 
 		//execute process
 	} while(1);
+	
 }

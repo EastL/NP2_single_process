@@ -21,5 +21,6 @@ void tokenizer(int cfd);
 int get_token_type(char *str);
 void push_enter_node();
 void print_node();
+token_node *get_node(int cfd);
 
 #endif

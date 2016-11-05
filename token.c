@@ -41,6 +41,7 @@ token_node *pull_node()
 	{
 		token_node *temp = front;
 		front = front->next;
+		temp->next = NULL;
 		return temp;
 	}
 }
@@ -104,5 +105,14 @@ void tokenizer(int cfd)
 			
 	}
 
-	//print_node();
+	print_node();
+}
+
+token_node *get_node(int cfd)
+{
+	if (front == NULL)
+		tokenizer(cfd);
+
+	return pull_node();
+
 }
