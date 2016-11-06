@@ -42,7 +42,7 @@ void parse(int sfd)
 			{
 				//new a cmd node
 				node = malloc(sizeof(cmd_node));
-				node->cmd = malloc(strlen(current_node->token) + 1);
+				node->cmd = malloc(strlen(current_node->token));
 				strcpy(node->cmd, current_node->token);
 				//node->cmd[strlen(current_node->token)] = '\0';
 				node->arg = malloc(sizeof(char*) * 4);
@@ -66,7 +66,7 @@ void parse(int sfd)
 
 			else if (last_type == PIPE)
 			{
-				node->cmd = malloc(strlen(current_node->token) + 1);
+				node->cmd = malloc(strlen(current_node->token));
 				strcpy(node->cmd, current_node->token);
 				//node->cmd[strlen(current_node->token)] = '\0';
 				node->arg = malloc(sizeof(char*) * 4);
@@ -82,7 +82,7 @@ void parse(int sfd)
 			
 			else if (last_type == CMDF)
 			{
-				node->arg[node->arg_count] = malloc(strlen(current_node->token) + 1);
+				node->arg[node->arg_count] = malloc(strlen(current_node->token));
 				strcpy(node->arg[node->arg_count], current_node->token);
 				//node->arg[node->arg_count][strlen(current_node->token)] = '\0';
 				node->arg_count++;

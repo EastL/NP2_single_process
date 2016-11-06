@@ -72,11 +72,11 @@ void shell(int client_fd)
 					continue;
 				}
 
-				char *env_name = malloc(strlen(current_cmd->arg[1]) - 1);
-				strncpy(env_name, current_cmd->arg[1], (strlen(current_cmd->arg[1]) - 1));
-				char *env_val = getenv(env_name);//sooooock
+				//char *env_name = malloc(strlen(current_cmd->arg[1]) - 1);
+				//strncpy(env_name, current_cmd->arg[1], (strlen(current_cmd->arg[1]) - 1));
+				char *env_val = getenv(current_cmd->arg[1]);//sooooock
 				char *ret = malloc(strlen(env_val) + strlen(current_cmd->arg[1]) + 4);
-				sprintf(ret, "%s=%s\n", env_name, env_val);
+				sprintf(ret, "%s=%s\n", current_cmd->arg[1], env_val);
 				
 				write(client_fd, ret, strlen(ret));
 				free_cmd(current_cmd);
@@ -106,7 +106,7 @@ void shell(int client_fd)
 
 				else
 				{
-					execute_node(current_cmd);
+					execute_node(current_cmd, client_fd);
 					current_cmd = pull_cmd();
 				}
 			}
@@ -116,12 +116,20 @@ void shell(int client_fd)
 	
 }
 
-int execute_node(cmd_node *node)
+int execute_node(cmd_node *node, int client_fd)
 {
 	int pid = fork();
 
 	if (pid == 0)
 	{
+
+		close(0);
+		close(1);
+		close(2);
+		dup(client_fd);
+		dup(client_fd);
+		dup(client_fd);
+
 		if (node->in != 0)
 		{
 			close(0);
@@ -133,10 +141,27 @@ int execute_node(cmd_node *node)
 			close(1);
 			dup(node->out);
 		}
+
+		//printf("%lu\n", strlen(node->cmd));
+		//char *temp = malloc(sizeof(char)*(strlen(node->cmd)-1));
+		//strncpy(temp, node->cmd, strlen(node->cmd)-1);
 		execvp(node->cmd, node->arg);
 		
 	}
+
+	else
+	{
+		int t;
+		waitpid(pid, &t, 0);
+	}
 	return 0;
+}
+
+char *trick(char *str)
+{
+	char *ret = malloc(sizeof(char)*(strlen(str)-1));
+	strncpy(ret, str, (strlen(str)-1));
+	return ret;
 }
 
 int check_cmd_exist(char *cmd, char *path)
@@ -155,7 +180,7 @@ int check_cmd_exist(char *cmd, char *path)
 		char *real_path = malloc(sizeof(char)*(strlen(full_path)-1));
 		strncpy(real_path, full_path, (strlen(full_path)-1));
 		
-		if (stat(real_path, &s) != -1) //hooly shiiiiit
+		if (stat(full_path, &s) != -1) //hooly shiiiiit
 			return 1;
 	}
 
