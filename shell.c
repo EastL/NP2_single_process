@@ -24,6 +24,7 @@ void shell(int client_fd)
 		return;
 	}
 
+
 	//set env
 	setenv("PATH", "bin:.", 1);
 
@@ -106,7 +107,9 @@ void shell(int client_fd)
 
 				else
 				{
+					//printf("next:%s\n", current_cmd->next->cmd);
 					execute_node(current_cmd, client_fd);
+					//free_cmd(current_cmd);
 					current_cmd = pull_cmd();
 				}
 			}
@@ -132,21 +135,23 @@ int execute_node(cmd_node *node, int client_fd)
 
 		if (node->in != 0)
 		{
+			printf("%d\n", node->in);
 			close(0);
 			dup(node->in);
+			close(node->in);
 		}
 
 		if (node->out != 1)
 		{
+			printf("%d\n", node->out);
 			close(1);
 			dup(node->out);
+			close(node->out);
 		}
 
-		//printf("%lu\n", strlen(node->cmd));
 		//char *temp = malloc(sizeof(char)*(strlen(node->cmd)-1));
 		//strncpy(temp, node->cmd, strlen(node->cmd)-1);
 		execvp(node->cmd, node->arg);
-		
 	}
 
 	else

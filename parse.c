@@ -45,10 +45,12 @@ void parse(int sfd)
 				node->cmd = malloc(strlen(current_node->token));
 				strcpy(node->cmd, current_node->token);
 				//node->cmd[strlen(current_node->token)] = '\0';
-				node->arg = malloc(sizeof(char*) * 4);
+				node->arg = malloc(sizeof(char*) * 5);
 				node->arg[0] = node->cmd;
 				node->arg[1] = NULL;
 				node->arg[2] = NULL;
+				node->arg[3] = NULL;
+				node->arg[4] = NULL;
 				node->in = 0;
 				node->out = 1;
 				node->arg_count = 1;
@@ -69,10 +71,12 @@ void parse(int sfd)
 				node->cmd = malloc(strlen(current_node->token));
 				strcpy(node->cmd, current_node->token);
 				//node->cmd[strlen(current_node->token)] = '\0';
-				node->arg = malloc(sizeof(char*) * 4);
+				node->arg = malloc(sizeof(char*) * 5);
 				node->arg[0] = node->cmd;
 				node->arg[1] = NULL;
 				node->arg[2] = NULL;
+				node->arg[3] = NULL;
+				node->arg[4] = NULL;
 				node->out = 1;
 				node->arg_count = 1;
 				node->is_redir = 0;
@@ -101,10 +105,10 @@ void parse(int sfd)
 			pipe(pip);
 
 			//old node
-			node->out = pip[0];
+			node->out = pip[1];
 			push_cmd(&node);
 			node = malloc(sizeof(cmd_node));
-			node->in = pip[1];
+			node->in = pip[0];
 		} 
 		
 		else if (type == PIPEN)
@@ -118,7 +122,7 @@ void parse(int sfd)
 				pipe(pip);
 
 				//old node
-				node->out = pip[0];
+				node->out = pip[1];
 				node->is_pipe_n = 1;
 				push_cmd(&node);
 
