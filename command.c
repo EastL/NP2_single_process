@@ -15,7 +15,7 @@ void push_cmd(cmd_node **node)
 		cfront = crear = *node;
 	else
 	{
-		cfront->next = *node;
+		crear->next = *node;
 		crear = *node;
 	}
 }
@@ -29,4 +29,18 @@ cmd_node *pull_cmd()
 	cfront = cfront->next;
 	temp->next = NULL;
 	return temp;
+}
+
+void print_cmd()
+{
+	cmd_node *tmp = cfront;
+	while (tmp != NULL)
+	{
+		printf("cmd:%s\n", tmp->cmd);
+		printf("arg:%s\n", tmp->arg[0]);
+		printf("in:%d\n", tmp->in);
+		printf("out:%d\n", tmp->out);
+
+		tmp = tmp->next;
+	}
 }

@@ -1,4 +1,4 @@
 #ifndef __SHELL__
-#define SHELL
+#define __SHELL__
 void shell(int client_fd);
 #endif

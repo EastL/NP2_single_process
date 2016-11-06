@@ -49,12 +49,16 @@ void shell(int client_fd)
 		
 	}
 */
+
+	int pipn = -1;
+	int pipfd = -1;
 	do
 	{
 		write(client_fd, shellsign, strlen(shellsign));
 
 		//read and parsing line
-		parse(client_fd, cmd_list);
+		parse(client_fd);
+		print_cmd();
 
 		//execute process
 	} while(1);

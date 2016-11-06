@@ -41,7 +41,6 @@ token_node *pull_node()
 	{
 		token_node *temp = front;
 		front = front->next;
-		temp->next = NULL;
 		return temp;
 	}
 }
@@ -62,7 +61,8 @@ void print_node()
 	token_node *t = front;
 	while(t != NULL)
 	{
-		printf("%s type:%d\n", t->token, t->token_type);
+		printf("token:%s\n", t->token);
+		printf("type:%d\n\n", t->token_type);
 		t = t->next;
 	}
 }
@@ -75,9 +75,6 @@ void tokenizer(int cfd)
 	size_t i;
 
 	read(cfd, buf, 10010);
-
-	//four situation
-	
 	split(&token_array, buf, " ", &token_n);
 
 	for (i = 0; i < token_n; i++)
@@ -98,6 +95,7 @@ void tokenizer(int cfd)
 		{
 			tnode->token = malloc(sizeof(char) * (strlen(token_array[i]) + 1));
 			strncpy(tnode->token, token_array[i], strlen(token_array[i]));
+			tnode->token[strlen(token_array[i])] = '\0';
 			tnode->token_type = get_token_type(token_array[i]);
 			tnode->next = NULL;
 			push_node(&tnode);
