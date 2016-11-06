@@ -113,12 +113,18 @@ void parse(int sfd)
 				push_cmd(&node);
 
 				//pipe node
-				pipe_node *new_node;
+				pipe_node *new_node = malloc(sizeof(pipe_node));
 				new_node->num = (current_node->token[1] - 0x30);
 				new_node->infd = pip[0];
 				new_node->outfd = pip[1];
 				new_node->next = NULL;
 				push_pipe(&new_node);
+			}
+
+			else
+			{
+				node->out = get_same_count->infd;
+				push_cmd(&node);
 			}
 		}
 		
