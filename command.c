@@ -59,3 +59,15 @@ void free_cmd(cmd_node *node)
 	node->next = NULL;
 	free(node);
 }
+
+void free_cmd_line()
+{
+	cmd_node *temp = NULL;
+	while (cfront != NULL)
+	{
+		temp = pull_cmd();
+		free_cmd(temp);
+	}
+	
+	crear = NULL;
+}

@@ -9,6 +9,7 @@ struct __cmd
 	int pip_count;
 	int in;
 	int out;
+	int err;
 	int is_pipe_n;
 	int is_redir;
 	struct __cmd *next;
@@ -20,4 +21,5 @@ void push_cmd(cmd_node **node);
 cmd_node *pull_cmd();
 void print_cmd();
 void free_cmd(cmd_node *node);
+void free_cmd_line();
 #endif
