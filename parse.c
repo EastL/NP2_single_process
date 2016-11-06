@@ -13,6 +13,14 @@ void parse(int sfd)
 	//printf("parsing...\n");
 	token_node *last_node = NULL;
 	token_node *current_node = get_node(sfd);
+
+	if (current_node->token_type == NEWLINE)
+	{
+		free_token_node(current_node);
+		free_token();
+		return;
+	}
+
 	token_node *next_node = NULL;
 	cmd_node *node;
 	int16_t type = 0;
@@ -21,9 +29,9 @@ void parse(int sfd)
 	
 	do
 	{
+		type = current_node->token_type;
 		next_node = get_node(sfd);
 		next_type = next_node->token_type;
-		type = current_node->token_type;
 		if (last_node != NULL)
 			last_type = last_node->token_type;
 		//cmd or argv
@@ -46,6 +54,7 @@ void parse(int sfd)
 				node->arg_count = 0;
 				node->is_redir = 0;
 				node->is_pipe_n = 0;
+				node->next = NULL;
 
 				//check stdin
 				pipe_node *newnode = check(0);
@@ -68,6 +77,7 @@ void parse(int sfd)
 				node->arg_count = 0;
 				node->is_redir = 0;
 				node->is_pipe_n = 0;
+				node->next = NULL;
 			}
 			
 			else if (last_type == CMDF)
@@ -128,8 +138,19 @@ void parse(int sfd)
 			}
 		}
 		
+		if (last_node != NULL)
+			free_token_node(last_node);
 		last_node = current_node;
 		current_node = next_node;
-	} while (next_type != NEWLINE);
+
+		if (next_type == NEWLINE)
+		{
+			free_token_node(last_node);
+			free_token_node(current_node);
+			break;
+		}
+	} while (1);
+
+	free_token();
 	return;
 }

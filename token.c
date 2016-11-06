@@ -76,21 +76,27 @@ void tokenizer(int cfd)
 
 	read(cfd, buf, 10010);
 	split(&token_array, buf, " ", &token_n);
-
+	
 	for (i = 0; i < token_n; i++)
 	{
 		token_node *tnode = malloc(sizeof(token_node));
-		if (strlen(token_array[i]) != 1 && token_array[i][strlen(token_array[i])-1] == '\n')
+		if (token_array[i][strlen(token_array[i])-1] == '\n')
 		{
-			tnode->token = malloc(sizeof(char) * strlen(token_array[i]));
-			token_array[i][strlen(token_array[i])-1] = '\0';
-			strncpy(tnode->token, token_array[i], strlen(token_array[i]));
-			tnode->token_type = get_token_type(token_array[i]);
-			tnode->next = NULL;
-			push_node(&tnode);
-			push_enter_node();
-		}
+			if (strlen(token_array[i]) != 2)
+			{
+				tnode->token = malloc(sizeof(char) * strlen(token_array[i]));
+				token_array[i][strlen(token_array[i])-1] = '\0';
+				strncpy(tnode->token, token_array[i], strlen(token_array[i]));
+				tnode->token_type = get_token_type(token_array[i]);
+				tnode->next = NULL;
+				push_node(&tnode);
+				push_enter_node();
+			}
 		
+			else
+				push_enter_node();
+		}
+
 		else
 		{
 			tnode->token = malloc(sizeof(char) * (strlen(token_array[i]) + 1));
@@ -113,4 +119,18 @@ token_node *get_node(int cfd)
 
 	return pull_node();
 
+}
+
+void free_token_node(token_node *node)
+{
+	free(node->token);
+	node->token = NULL;
+	node->token_type = 0;
+	node->next = NULL;
+	free(node);
+}
+
+void free_token()
+{
+	front = rear = NULL;
 }

@@ -19,4 +19,5 @@ typedef struct __cmd cmd_node;
 void push_cmd(cmd_node **node);
 cmd_node *pull_cmd();
 void print_cmd();
+void free_cmd(cmd_node *node);
 #endif

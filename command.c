@@ -27,7 +27,6 @@ cmd_node *pull_cmd()
 
 	cmd_node *temp = cfront;
 	cfront = cfront->next;
-	temp->next = NULL;
 	return temp;
 }
 
@@ -43,4 +42,20 @@ void print_cmd()
 
 		tmp = tmp->next;
 	}
+}
+
+void free_cmd(cmd_node *node)
+{
+	free(node->cmd);
+	node->cmd = NULL;
+	free(node->arg);
+	node->arg = NULL;
+	node->arg_count = 0;
+	node->pip_count = 0;
+	node->in = 0;
+	node->out = 0;
+	node->is_pipe_n = 0;
+	node->is_redir = 0;
+	node->next = NULL;
+	free(node);
 }
