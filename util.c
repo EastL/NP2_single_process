@@ -16,9 +16,9 @@ void split(char ***arr, char *str, const char *del, size_t *count)
 
 	while (s != NULL)
 	{
-		size_t __count = strlen(s) + 1;
-		*(_arr + _count) = malloc(sizeof(char) * __count);
-		strncpy(*(_arr + _count), s, __count);
+		size_t __count = strlen(s);
+		*(_arr + _count) = malloc(sizeof(char) * (__count + 1));
+		strcpy(*(_arr + _count), s);
 		s = strtok_r(NULL, del, &save);
 		_count++;
 	}

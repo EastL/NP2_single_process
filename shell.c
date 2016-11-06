@@ -72,14 +72,12 @@ void shell(int client_fd)
 					continue;
 				}
 
-				printf("%lu\n", strlen(current_cmd->arg[1]));
 				char *env_name = malloc(strlen(current_cmd->arg[1]) - 1);
 				strncpy(env_name, current_cmd->arg[1], (strlen(current_cmd->arg[1]) - 1));
-				char *env_val = getenv(env_name); //soooooooock
-				
+				char *env_val = getenv(env_name);//sooooock
 				char *ret = malloc(strlen(env_val) + strlen(current_cmd->arg[1]) + 4);
 				sprintf(ret, "%s=%s\n", env_name, env_val);
-				ret[strlen(ret)] = '\0';
+				
 				write(client_fd, ret, strlen(ret));
 				free_cmd(current_cmd);
 				current_cmd = pull_cmd();
