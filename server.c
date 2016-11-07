@@ -25,12 +25,12 @@ int main()
 	bind(sockfd, (struct sockaddr*) &mysocket, sizeof(mysocket));
 	listen(sockfd, 20);
 
+	int clientfd;
+	struct sockaddr_in client_socket;
+	int cl_len = sizeof(client_socket);
+
 	while(1)
 	{
-		int clientfd;
-		struct sockaddr_in client_socket;
-		int cl_len = sizeof(client_socket);
-
 		if ((clientfd = accept(sockfd, (struct sockaddr*)&client_socket, &cl_len)) < 0)
 		{
 			printf("Accept error!");
@@ -39,18 +39,20 @@ int main()
 
 		int chpid = fork();
 
-		if (chpid)
+		if (chpid == 0)
 		{
-			int status;
-			int wpid = wait(&status);
-			printf("wait pid %d, status %d\n", wpid, status);
+			shell(clientfd);
+			printf("bye~\n");
+			exit(0);
 		}
 		
 		else
 		{
-			shell(clientfd);
+			int status;
+			waitpid(chpid, &status, 0);
 			close(clientfd);
-			return 0;
 		}
 	}
+
+	return 0;
 }

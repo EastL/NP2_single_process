@@ -97,7 +97,7 @@ void shell(int client_fd)
 					char *unkown = "Unknown command: [";
 					char *untail = "].\n";
 					write(client_fd, unkown, strlen(unkown));
-					write(client_fd, current_cmd->cmd, (strlen(current_cmd->cmd)-1));
+					write(client_fd, current_cmd->cmd, strlen(current_cmd->cmd));
 					write(client_fd, untail, strlen(untail));
 					free_cmd(current_cmd);
 					free_cmd_line();
