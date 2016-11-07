@@ -132,10 +132,11 @@ int execute_node(cmd_node *node, int client_fd)
 		dup(client_fd);
 		dup(client_fd);
 		dup(client_fd);
+		close(client_fd);
 
 		if (node->in != 0)
 		{
-			printf("%d\n", node->in);
+			//printf("%d\n", node->in);
 			close(0);
 			dup(node->in);
 			close(node->in);
@@ -143,7 +144,7 @@ int execute_node(cmd_node *node, int client_fd)
 
 		if (node->out != 1)
 		{
-			printf("%d\n", node->out);
+			//printf("%d\n", node->out);
 			close(1);
 			dup(node->out);
 			close(node->out);
@@ -156,6 +157,8 @@ int execute_node(cmd_node *node, int client_fd)
 
 	else
 	{
+		close(node->in);
+		close(node->out);
 		int t;
 		waitpid(pid, &t, 0);
 	}
