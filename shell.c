@@ -125,7 +125,6 @@ int execute_node(cmd_node *node, int client_fd)
 
 	if (pid == 0)
 	{
-
 		close(0);
 		close(1);
 		close(2);
@@ -157,8 +156,11 @@ int execute_node(cmd_node *node, int client_fd)
 
 	else
 	{
-		close(node->in);
-		close(node->out);
+		if (node->in != 0)
+			close(node->in);
+		if (node->out != 1)
+			close(node->out);
+
 		int t;
 		waitpid(pid, &t, 0);
 	}
