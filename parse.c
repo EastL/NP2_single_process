@@ -42,7 +42,7 @@ void parse(int sfd)
 			{
 				//new a cmd node
 				node = malloc(sizeof(cmd_node));
-				node->cmd = malloc(strlen(current_node->token)+1);
+				node->cmd = malloc(strlen(current_node->token) + 1);
 				strcpy(node->cmd, current_node->token);
 				node->arg = malloc(sizeof(char*) * 5);
 				node->arg[0] = node->cmd;
@@ -50,11 +50,10 @@ void parse(int sfd)
 				node->arg[2] = NULL;
 				node->arg[3] = NULL;
 				node->arg[4] = NULL;
-				node->in = 0;
-				node->out = 1;
 				node->arg_count = 1;
 				node->is_init = 1;
 				node->type = 0;
+				node->file = NULL;
 				node->next = NULL;
 
 				if (last_type == PIPE)
@@ -71,9 +70,15 @@ void parse(int sfd)
 
 			else if (last_type == CMDF)
 			{
-				node->arg[node->arg_count] = malloc(strlen(current_node->token)+1);
+				node->arg[node->arg_count] = malloc(strlen(current_node->token) + 1);
 				strcpy(node->arg[node->arg_count], current_node->token);
 				node->arg_count++;
+			}
+
+			else if (last_type == REDIR)
+			{
+				node->file = malloc(strlen(current_node->token) + 1);
+				strcpy(node->file, current_node->token);
 			}
 
 			if (next_type == NEWLINE)
@@ -126,7 +131,7 @@ void parse(int sfd)
 		else if (type == REDIR)
 		{
 			node->type = ISREDIR;
-			push_cmd(&node);
+			//push_cmd(&node);
 		}
 		
 		else if (type == PIPERR)

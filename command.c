@@ -51,9 +51,9 @@ void free_cmd(cmd_node *node)
 	node->arg = NULL;
 	node->arg_count = 0;
 	node->pip_count = 0;
-	node->in = 0;
-	node->out = 0;
 	node->is_init = 0;
+	free(node->file);
+	node->file = NULL;
 	node->next = NULL;
 	free(node);
 }

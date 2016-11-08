@@ -16,6 +16,8 @@ int get_token_type(char *str)
 		return PIPE;
 	else if (regular_match(str, ">") == 1)
 		return REDIR;
+	else if (regular_match(str, "!") == 1)
+		return PIPERR;
 	else if (regular_match(str, "\n") == 1)
 		return NEWLINE;
 	else 
@@ -102,7 +104,6 @@ void tokenizer(int cfd)
 		{
 			tnode->token = malloc(sizeof(char) * (strlen(token_array[i]) + 1));
 			strcpy(tnode->token, token_array[i]);
-			tnode->token[strlen(token_array[i])] = '\0';
 			tnode->token_type = get_token_type(token_array[i]);
 			free(token_array[i]);
 			tnode->next = NULL;
@@ -111,7 +112,7 @@ void tokenizer(int cfd)
 			
 	}
 
-	//free(token_array);
+	free(token_array);
 	print_node();
 }
 

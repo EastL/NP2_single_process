@@ -3,6 +3,8 @@
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/fcntl.h>
 #include <string.h>
 #include <unistd.h>
 #include "shell.h"
@@ -140,6 +142,12 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 		pipe(pip);
 		stdoutfd = pip[1];
 		*next_n = pip[0];
+	}
+
+	else if (node->type == ISREDIR)
+	{
+		int filefd = open(node->file, O_CREAT | O_RDWR);
+		stdoutfd = filefd;
 	}
 
 	int pid = fork();

@@ -12,10 +12,8 @@ struct __cmd
 	char **arg;
 	int arg_count;
 	int pip_count;
-	int in;
-	int out;
-	int err;
 	int type;
+	char *file;
 	int is_init;
 	struct __cmd *next;
 };
