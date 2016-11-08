@@ -38,11 +38,7 @@ void print_cmd()
 	while (tmp != NULL)
 	{
 		printf("cmd:%s\n", tmp->cmd);
-		printf("arg:%s\n", tmp->arg[0]);
-		printf("in:%d\n", tmp->in);
-		printf("out:%d\n", tmp->out);
-		//printf("Next:%x\n", tmp->next);
-
+		printf("arg:%s\n", tmp->arg[1]);
 		tmp = tmp->next;
 	}
 }
@@ -57,8 +53,7 @@ void free_cmd(cmd_node *node)
 	node->pip_count = 0;
 	node->in = 0;
 	node->out = 0;
-	node->is_pipe_n = 0;
-	node->is_redir = 0;
+	node->is_init = 0;
 	node->next = NULL;
 	free(node);
 }

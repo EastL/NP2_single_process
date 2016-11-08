@@ -18,8 +18,6 @@ void split(char ***arr, char *str, const char *del, size_t *count)
 	{
 		size_t __count = strlen(s);
 		*(_arr + _count) = malloc(sizeof(char) * (__count + 1));
-		printf("%lu\n", _count);
-		printf("%x\n", *(_arr));
 		strcpy(*(_arr + _count), s);
 		s = strtok_r(NULL, del, &save);
 		_count++;

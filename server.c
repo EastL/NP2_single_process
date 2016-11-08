@@ -22,6 +22,8 @@ int main()
 	mysocket.sin_addr.s_addr = INADDR_ANY;
 	mysocket.sin_port = htons(3421);
 
+	int sock_opt = 1 ;
+	setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,(void *)&sock_opt,sizeof(sock_opt));
 	bind(sockfd, (struct sockaddr*) &mysocket, sizeof(mysocket));
 	listen(sockfd, 20);
 

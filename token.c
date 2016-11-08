@@ -75,14 +75,10 @@ void tokenizer(int cfd)
 	size_t i;
 
 	read(cfd, buf, 10010);
-	printf("%s\n", buf);
 	split(&token_array, buf, " ", &token_n);
-	printf("%lu\n", token_n);
 	
 	for (i = 0; i < token_n; i++)
 	{
-		printf("%lu\n", i);
-		printf("%s\n", token_array[i]);
 		token_node *tnode = malloc(sizeof(token_node));
 		if (token_array[i][strlen(token_array[i])-1] == '\n')
 		{
@@ -115,7 +111,7 @@ void tokenizer(int cfd)
 			
 	}
 
-	free(token_array);
+	//free(token_array);
 	print_node();
 }
 

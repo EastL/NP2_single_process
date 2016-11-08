@@ -38,13 +38,12 @@ void parse(int sfd)
 		if (type == CMDF)
 		{
 			//cmd : first place or after pipe or after enter
-			if (last_node == NULL || last_type == NEWLINE)
+			if (last_node == NULL || last_type == PIPE || last_type == NEWLINE)
 			{
 				//new a cmd node
 				node = malloc(sizeof(cmd_node));
 				node->cmd = malloc(strlen(current_node->token)+1);
 				strcpy(node->cmd, current_node->token);
-				//node->cmd[strlen(current_node->token)] = '\0';
 				node->arg = malloc(sizeof(char*) * 5);
 				node->arg[0] = node->cmd;
 				node->arg[1] = NULL;
@@ -54,41 +53,26 @@ void parse(int sfd)
 				node->in = 0;
 				node->out = 1;
 				node->arg_count = 1;
-				node->is_redir = 0;
-				node->is_pipe_n = 0;
+				node->is_init = 1;
+				node->type = 0;
 				node->next = NULL;
 
+				if (last_type == PIPE)
+					node->is_init = 0;
+/*
 				//check stdin
 				pipe_node *newnode = check(0);
 				if (newnode != NULL)
 				{
 					node->in = newnode->outfd;
 				}
+*/
 			}
 
-			else if (last_type == PIPE)
-			{
-				node->cmd = malloc(strlen(current_node->token)+1);
-				strcpy(node->cmd, current_node->token);
-				//node->cmd[strlen(current_node->token)] = '\0';
-				node->arg = malloc(sizeof(char*) * 5);
-				node->arg[0] = node->cmd;
-				node->arg[1] = NULL;
-				node->arg[2] = NULL;
-				node->arg[3] = NULL;
-				node->arg[4] = NULL;
-				node->out = 1;
-				node->arg_count = 1;
-				node->is_redir = 0;
-				node->is_pipe_n = 0;
-				node->next = NULL;
-			}
-			
 			else if (last_type == CMDF)
 			{
 				node->arg[node->arg_count] = malloc(strlen(current_node->token)+1);
 				strcpy(node->arg[node->arg_count], current_node->token);
-				//node->arg[node->arg_count][strlen(current_node->token)] = '\0';
 				node->arg_count++;
 			}
 
@@ -100,19 +84,13 @@ void parse(int sfd)
 
 		else if (type == PIPE)
 		{
-			//creat pipe
-			int pip[2];
-			pipe(pip);
-
-			//old node
-			node->out = pip[1];
+			node->type = ISPIPE;
 			push_cmd(&node);
-			node = malloc(sizeof(cmd_node));
-			node->in = pip[0];
 		} 
 		
 		else if (type == PIPEN)
 		{
+/*
 			pipe_node *get_same_count = check(current_node->token[1] - 0x30);			
 
 			if (get_same_count == NULL)
@@ -140,13 +118,23 @@ void parse(int sfd)
 				node->out = get_same_count->infd;
 				push_cmd(&node);
 			}
+*/
+			node->type = ISPIPEN;
+			push_cmd(&node);
 		}
 
 		else if (type == REDIR)
 		{
-			;
+			node->type = ISREDIR;
+			push_cmd(&node);
 		}
 		
+		else if (type == PIPERR)
+		{
+			node->type = ISPIPEERR;
+			push_cmd(&node);
+		}
+
 		if (last_node != NULL)
 			free_token_node(last_node);
 		last_node = current_node;

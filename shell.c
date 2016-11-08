@@ -46,6 +46,8 @@ void shell(int client_fd)
 		//execute process
 		cmd_node *current_cmd = pull_cmd();
 
+		int next_pipe_num = 0;
+
 		while (current_cmd != NULL)
 		{
 			if (strncmp(current_cmd->cmd, "setenv", 6) == 0)
@@ -108,7 +110,7 @@ void shell(int client_fd)
 				else
 				{
 					//printf("next:%s\n", current_cmd->next->cmd);
-					execute_node(current_cmd, client_fd);
+					execute_node(current_cmd, client_fd, &next_pipe_num);
 					//free_cmd(current_cmd);
 					current_cmd = pull_cmd();
 				}
@@ -119,8 +121,27 @@ void shell(int client_fd)
 	
 }
 
-int execute_node(cmd_node *node, int client_fd)
+int execute_node(cmd_node *node, int client_fd, int *next_n)
 {
+	int stdinfd = -1;
+	int stdoutfd = -1;
+
+	if (node->is_init)
+	{
+		stdinfd = -1;
+	}
+
+	else
+		stdinfd = *next_n;
+
+	if (node->type == ISPIPE)
+	{
+		int pip[2];
+		pipe(pip);
+		stdoutfd = pip[1];
+		*next_n = pip[0];
+	}
+
 	int pid = fork();
 
 	if (pid == 0)
@@ -133,33 +154,29 @@ int execute_node(cmd_node *node, int client_fd)
 		dup(client_fd);
 		close(client_fd);
 
-		if (node->in != 0)
+		if (stdinfd != -1)
 		{
-			//printf("%d\n", node->in);
 			close(0);
-			dup(node->in);
-			close(node->in);
+			dup(stdinfd);
+			close(stdinfd);
 		}
 
-		if (node->out != 1)
+		if (stdoutfd != -1)
 		{
-			//printf("%d\n", node->out);
 			close(1);
-			dup(node->out);
-			close(node->out);
+			dup(stdoutfd);
+			close(stdoutfd);
 		}
 
-		//char *temp = malloc(sizeof(char)*(strlen(node->cmd)-1));
-		//strncpy(temp, node->cmd, strlen(node->cmd)-1);
 		execvp(node->cmd, node->arg);
 	}
 
 	else
 	{
-		if (node->in != 0)
-			close(node->in);
-		if (node->out != 1)
-			close(node->out);
+		if (stdinfd != -1)
+			close(stdinfd);
+		if (stdoutfd != -1)
+			close(stdoutfd);
 
 		int t;
 		waitpid(pid, &t, 0);

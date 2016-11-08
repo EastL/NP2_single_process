@@ -1,6 +1,11 @@
 #ifndef __COMMAND__
 #define __COMMAND__
 
+#define ISPIPE 1
+#define ISPIPEN 2
+#define ISPIPEERR 3
+#define ISREDIR 4
+
 struct __cmd
 {
 	char *cmd;
@@ -10,8 +15,8 @@ struct __cmd
 	int in;
 	int out;
 	int err;
-	int is_pipe_n;
-	int is_redir;
+	int type;
+	int is_init;
 	struct __cmd *next;
 };
 
