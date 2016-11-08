@@ -22,17 +22,13 @@ void push_cmd(cmd_node **node)
 
 cmd_node *pull_cmd()
 {
-	printf("hello?\n");
 	if (cfront == NULL)
 	{
 		printf("ya!\n");
 		return NULL;
 	}
-	printf("hhhh\n");
 	cmd_node *temp = cfront;
-	printf("hh\n");
 	cfront = cfront->next;
-	printf("h\n");
 	return temp;
 }
 
