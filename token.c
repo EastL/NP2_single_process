@@ -16,7 +16,7 @@ int get_token_type(char *str)
 		return PIPE;
 	else if (regular_match(str, ">") == 1)
 		return REDIR;
-	else if (regular_match(str, "!") == 1)
+	else if (regular_match(str, "![[:digit:]]+") == 1)
 		return PIPERR;
 	else if (regular_match(str, "\n") == 1)
 		return NEWLINE;

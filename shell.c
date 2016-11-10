@@ -146,7 +146,7 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 
 	else if (node->type == ISREDIR)
 	{
-		int filefd = open(node->file, O_CREAT | O_RDWR);
+		int filefd = open(node->file, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IROTH);
 		stdoutfd = filefd;
 	}
 
