@@ -43,6 +43,8 @@ pipe_node *check(int count)
 
 void free_pipe(pipe_node *node)
 {
+	close(node->outfd);
+	printf("closed:%d\n", node->outfd);
 	node->num = 0;
 	node->infd = 0;
 	node->outfd = 0;
@@ -57,13 +59,17 @@ void decress_count()
 
 	while (temp != NULL)
 	{
-		if (temp->num-- == -1)
+		printf("number:%d\n", temp->num);
+		if (--temp->num == -1)
 		{
 			//do unlink and free
 			if (pre == NULL)
 			{
 				pipe_front = temp->next;
-				temp = temp->next;
+				free_pipe(temp);
+
+				//for next
+				temp = pipe_front;
 			}
 			else
 			{
@@ -76,5 +82,6 @@ void decress_count()
 
 		else
 			temp = temp->next;
+
 	}
 }

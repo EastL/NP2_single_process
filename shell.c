@@ -128,6 +128,8 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 {
 	int stdinfd = -1;
 	int stdoutfd = -1;
+	int tocloseout = -1;
+	int pipe_n = 0;
 
 	if (node->is_init)
 	{
@@ -138,6 +140,7 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 		{
 			printf("yoman\n");
 			stdinfd = ch_node->infd;
+			tocloseout = ch_node->outfd;
 		}
 	}
 
@@ -160,20 +163,29 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 
 	else if (node->type == ISPIPEN)
 	{
-		pipe_node *pip_node = malloc(sizeof(pipe_node));
-		pip_node->num = node->pip_count;
+		pipe_node *pip_node = check(node->pip_count);
 
-		//construct pipe
-		int pipn[2];
-		pipe(pipn);
-		pip_node->infd = pipn[0];
-		pip_node->outfd = pipn[1];
-		pip_node->next = NULL;
-		push_pipe(&pip_node);
-		
-		stdoutfd = pipn[1];
+		if (pip_node == NULL)
+		{
+			pip_node = malloc(sizeof(pipe_node));
+			pip_node->num = node->pip_count;
+
+			//construct pipe
+			int pipn[2];
+			pipe(pipn);
+			pip_node->infd = pipn[0];
+			pip_node->outfd = pipn[1];
+			pip_node->next = NULL;
+			push_pipe(&pip_node);
+		}
+
+		stdoutfd = pip_node->outfd;
+		pipe_n = 1;
 	}
 	
+
+	printf("infd:%d\n", stdinfd);
+	printf("outfd:%d\n", stdoutfd);
 
 	//last command, decress
 	if (node->is_new)
@@ -206,14 +218,26 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 		}
 
 		execvp(node->cmd, node->arg);
+		close(0);
+		close(1);
 	}
 
 	else
 	{
+
 		if (stdinfd != -1)
+		{
 			close(stdinfd);
+			printf("closed:%d\n", stdinfd);
+		}
+
 		if (stdoutfd != -1)
-			close(stdoutfd);
+			if (!pipe_n)
+			{
+				close(stdoutfd);
+				printf("closed:%d\n", stdoutfd);
+			}
+
 
 		int t;
 		waitpid(pid, &t, 0);
