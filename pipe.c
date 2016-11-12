@@ -43,8 +43,6 @@ pipe_node *check(int count)
 
 void free_pipe(pipe_node *node)
 {
-	close(node->outfd);
-	printf("closed:%d\n", node->outfd);
 	node->num = 0;
 	node->infd = 0;
 	node->outfd = 0;

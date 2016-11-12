@@ -128,7 +128,6 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 {
 	int stdinfd = -1;
 	int stdoutfd = -1;
-	int tocloseout = -1;
 	int pipe_n = 0;
 
 	if (node->is_init)
@@ -140,7 +139,7 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 		{
 			printf("yoman\n");
 			stdinfd = ch_node->infd;
-			tocloseout = ch_node->outfd;
+			close(ch_node->outfd);
 		}
 	}
 
