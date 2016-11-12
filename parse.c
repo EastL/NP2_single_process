@@ -51,7 +51,9 @@ void parse(int sfd)
 				node->arg[3] = NULL;
 				node->arg[4] = NULL;
 				node->arg_count = 1;
+				node->pip_count = 0;
 				node->is_init = 1;
+				node->is_new = 0;
 				node->type = 0;
 				node->file = NULL;
 				node->next = NULL;
@@ -83,6 +85,7 @@ void parse(int sfd)
 
 			if (next_type == NEWLINE)
 			{
+				node->is_new = 1;
 				push_cmd(&node);
 			}
 		}
@@ -125,6 +128,11 @@ void parse(int sfd)
 			}
 */
 			node->type = ISPIPEN;
+			if (next_type == NEWLINE)
+				node->is_new = 1;
+			node->pip_count = current_node->token[1] - '0';
+			printf("%d\n", node->pip_count);
+
 			push_cmd(&node);
 		}
 
@@ -136,6 +144,8 @@ void parse(int sfd)
 		
 		else if (type == PIPERR)
 		{
+			if (next_type == NEWLINE)
+				node->is_new = 1;
 			node->type = ISPIPEERR;
 			push_cmd(&node);
 		}

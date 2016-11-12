@@ -15,6 +15,7 @@ struct __cmd
 	int type;
 	char *file;
 	int is_init;
+	int is_new;
 	struct __cmd *next;
 };
 

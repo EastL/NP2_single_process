@@ -131,10 +131,14 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 
 	if (node->is_init)
 	{
+		printf("yyy\n");
 		pipe_node *ch_node = NULL;
 		ch_node = check(0);
 		if (ch_node != NULL)
+		{
+			printf("yoman\n");
 			stdinfd = ch_node->infd;
+		}
 	}
 
 	else
@@ -153,6 +157,27 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 		int filefd = open(node->file, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IROTH);
 		stdoutfd = filefd;
 	}
+
+	else if (node->type == ISPIPEN)
+	{
+		pipe_node *pip_node = malloc(sizeof(pipe_node));
+		pip_node->num = node->pip_count;
+
+		//construct pipe
+		int pipn[2];
+		pipe(pipn);
+		pip_node->infd = pipn[0];
+		pip_node->outfd = pipn[1];
+		pip_node->next = NULL;
+		push_pipe(&pip_node);
+		
+		stdoutfd = pipn[1];
+	}
+	
+
+	//last command, decress
+	if (node->is_new)
+		decress_count();
 
 	int pid = fork();
 
