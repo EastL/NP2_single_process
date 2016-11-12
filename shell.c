@@ -11,6 +11,7 @@
 #include "command.h"
 #include "parse.h"
 #include "util.h"
+#include "pipe.h"
 
 void shell(int client_fd)
 {
@@ -130,7 +131,10 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 
 	if (node->is_init)
 	{
-		stdinfd = -1;
+		pipe_node *ch_node = NULL;
+		ch_node = check(0);
+		if (ch_node != NULL)
+			stdinfd = ch_node->infd;
 	}
 
 	else

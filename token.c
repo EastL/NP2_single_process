@@ -84,10 +84,23 @@ void tokenizer(int cfd)
 		token_node *tnode = malloc(sizeof(token_node));
 		if (token_array[i][strlen(token_array[i])-1] == '\n')
 		{
-			if (strlen(token_array[i]) != 2)
+			int strip = 0;
+			if (token_array[i][strlen(token_array[i])-3] == '\r')
+				strip = 3;
+
+			else if (token_array[i][strlen(token_array[i])-2] == '\r')
+				strip = 2;
+
+			else
+				strip = 1;
+			
+			if ((strlen(token_array[i]) - strip) == 0)
+				push_enter_node();
+
+			else
 			{
 				tnode->token = malloc(sizeof(char) * (strlen(token_array[i]) + 1));
-				token_array[i][strlen(token_array[i])-2] = '\0';
+				token_array[i][strlen(token_array[i])-strip] = '\0';
 				strcpy(tnode->token, token_array[i]);
 				tnode->token_type = get_token_type(token_array[i]);
 				tnode->next = NULL;
@@ -96,8 +109,6 @@ void tokenizer(int cfd)
 				push_enter_node();
 			}
 		
-			else
-				push_enter_node();
 		}
 
 		else

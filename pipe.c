@@ -25,6 +25,7 @@ void push_pipe(pipe_node **node)
 	}
 }
 
+
 pipe_node *check(int count)
 {
 	pipe_node *temp = pipe_front;
@@ -34,7 +35,6 @@ pipe_node *check(int count)
 		if (temp->num == count)
 		{
 			ret = temp;
-			break;
 		}
 	}
 
