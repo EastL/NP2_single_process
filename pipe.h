@@ -6,6 +6,7 @@ struct __pipe
 	int num;
 	int infd;
 	int outfd;
+	int is_err;
 	struct __pipe *next;
 };
 

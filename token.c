@@ -72,34 +72,50 @@ void print_node()
 void tokenizer(int cfd)
 {
 	char *buf = malloc(sizeof(char) * 10010);
+	memset(buf, 0, 10010);
 	size_t token_n;
 	char **token_array;
 	size_t i;
+	size_t recvsize = 0;
 
-	read(cfd, buf, 10010);
+	recvsize = read(cfd, buf, 10010);
+	printf("size:%lu\n", recvsize);
+
+	if (!(buf[recvsize-1] == 0x0a || (buf[recvsize-1] >= 0x30 && buf[recvsize-1] <= 0x39) || (buf[recvsize-1] >= 0x41 && buf[recvsize-1] <= 0x5a) || (buf[recvsize-1] >= 0x61 && buf[recvsize-1] <= 0x7a)))
+		buf[recvsize-1] == '\0';
 	split(&token_array, buf, " ", &token_n);
 	
 	for (i = 0; i < token_n; i++)
 	{
+
+		printf("token name:%s\n", token_array[i]);
+		printf("token size:%lu\n", strlen(token_array[i]));
 		token_node *tnode = malloc(sizeof(token_node));
 		if (token_array[i][strlen(token_array[i])-1] == '\n')
 		{
 			int strip = 0;
 			if (token_array[i][strlen(token_array[i])-3] == '\r')
+			{
 				strip = 3;
+			}
 
 			else if (token_array[i][strlen(token_array[i])-2] == '\r')
+			{
 				strip = 2;
+			}
 
 			else
 				strip = 1;
 			
+			printf("strip:%d\n", strip);
+
 			if ((strlen(token_array[i]) - strip) == 0)
 				push_enter_node();
 
 			else
 			{
 				tnode->token = malloc(sizeof(char) * (strlen(token_array[i]) + 1));
+				memset(tnode->token, 0, (strlen(token_array[i]) + 1));
 				token_array[i][strlen(token_array[i])-strip] = '\0';
 				strcpy(tnode->token, token_array[i]);
 				tnode->token_type = get_token_type(token_array[i]);
@@ -114,6 +130,7 @@ void tokenizer(int cfd)
 		else
 		{
 			tnode->token = malloc(sizeof(char) * (strlen(token_array[i]) + 1));
+			memset(tnode->token, 0, (strlen(token_array[i]) + 1));
 			strcpy(tnode->token, token_array[i]);
 			tnode->token_type = get_token_type(token_array[i]);
 			free(token_array[i]);

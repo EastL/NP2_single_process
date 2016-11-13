@@ -114,7 +114,7 @@ void shell(int client_fd)
 				{
 					//printf("next:%s\n", current_cmd->next->cmd);
 					execute_node(current_cmd, client_fd, &next_pipe_num);
-					//free_cmd(current_cmd);
+					free_cmd(current_cmd);
 					current_cmd = pull_cmd();
 				}
 			}
@@ -128,7 +128,9 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 {
 	int stdinfd = -1;
 	int stdoutfd = -1;
+	int stderrfd = -1;
 	int pipe_n = 0;
+	int pipe_err = 0;
 
 	if (node->is_init)
 	{
@@ -160,7 +162,7 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 		stdoutfd = filefd;
 	}
 
-	else if (node->type == ISPIPEN)
+	else if (node->type == ISPIPEN || node->type == ISPIPEERR)
 	{
 		pipe_node *pip_node = check(node->pip_count);
 
@@ -178,11 +180,23 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 			push_pipe(&pip_node);
 		}
 
-		stdoutfd = pip_node->outfd;
-		pipe_n = 1;
+		if (node->type == ISPIPEN)
+		{
+			stdoutfd = pip_node->outfd;
+			pipe_n = 1;
+		}
+
+		else
+		{
+			stderrfd = pip_node->outfd;
+			pipe_err = 1;
+		}
 	}
+
 	
 
+	printf("cmd:%s\n", node->cmd);
+	printf("type:%d\n", node->type);
 	printf("infd:%d\n", stdinfd);
 	printf("outfd:%d\n", stdoutfd);
 
@@ -217,8 +231,6 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 		}
 
 		execvp(node->cmd, node->arg);
-		close(0);
-		close(1);
 	}
 
 	else

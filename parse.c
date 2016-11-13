@@ -10,9 +10,10 @@
 
 void parse(int sfd)
 {
-	//printf("parsing...\n");
+	printf("parsing...\n");
 	token_node *last_node = NULL;
 	token_node *current_node = get_node(sfd);
+	printf("parsinggggggggg...\n");
 
 	if (current_node->token_type == NEWLINE)
 	{
@@ -29,11 +30,22 @@ void parse(int sfd)
 	
 	do
 	{
+		printf("YO!\n");
+		printf("name:%s\n", current_node->token);
 		type = current_node->token_type;
 		next_node = get_node(sfd);
+		if (next_node != NULL)
+		{
+			printf("%s\n", next_node->token);
+			printf("%d\n", next_node->token_type);
+		}
 		next_type = next_node->token_type;
 		if (last_node != NULL)
+		{
+			printf("hii\n");
 			last_type = last_node->token_type;
+			printf("hiiiiii\n");
+		}
 		//cmd or argv
 		if (type == CMDF)
 		{
@@ -43,6 +55,7 @@ void parse(int sfd)
 				//new a cmd node
 				node = malloc(sizeof(cmd_node));
 				node->cmd = malloc(strlen(current_node->token) + 1);
+				memset(node->cmd, 0, strlen(current_node->token) + 1);
 				strcpy(node->cmd, current_node->token);
 				node->arg = malloc(sizeof(char*) * 5);
 				node->arg[0] = node->cmd;
@@ -73,6 +86,7 @@ void parse(int sfd)
 			else if (last_type == CMDF)
 			{
 				node->arg[node->arg_count] = malloc(strlen(current_node->token) + 1);
+				memset(node->arg[node->arg_count], 0, strlen(current_node->token) + 1);
 				strcpy(node->arg[node->arg_count], current_node->token);
 				node->arg_count++;
 			}
@@ -80,6 +94,7 @@ void parse(int sfd)
 			else if (last_type == REDIR)
 			{
 				node->file = malloc(strlen(current_node->token) + 1);
+				memset(node->file, 0, strlen(current_node->token) + 1);
 				strcpy(node->file, current_node->token);
 			}
 

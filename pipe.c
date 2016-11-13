@@ -11,6 +11,9 @@
 pipe_node *pipe_front = NULL;
 pipe_node *pipe_rear = NULL;
 
+pipe_node *err_pipe_front = NULL;
+pipe_node *err_pipe_rear = NULL;
+
 void push_pipe(pipe_node **node)
 {
 	if (pipe_front == NULL)
@@ -57,7 +60,6 @@ void decress_count()
 
 	while (temp != NULL)
 	{
-		printf("number:%d\n", temp->num);
 		if (--temp->num == -1)
 		{
 			//do unlink and free
