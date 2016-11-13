@@ -35,6 +35,7 @@ pipe_node *check(int count)
 	pipe_node *ret = NULL;
 	while (temp != NULL)
 	{
+		printf("ffffffind count:%d\n", temp->num);
 		if (temp->num == count)
 			ret = temp;
 
@@ -60,6 +61,9 @@ void decress_count()
 
 	while (temp != NULL)
 	{
+		printf("decr num:%d\n", temp->num);
+		printf("decr infd:%d\n", temp->infd);
+		printf("decr outfd:%d\n", temp->outfd);
 		if (--temp->num == -1)
 		{
 			//do unlink and free
@@ -81,7 +85,10 @@ void decress_count()
 		}
 
 		else
+		{
+			pre = temp;
 			temp = temp->next;
+		}
 
 	}
 }

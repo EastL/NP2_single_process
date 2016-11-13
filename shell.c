@@ -139,7 +139,6 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 		ch_node = check(0);
 		if (ch_node != NULL)
 		{
-			printf("yoman\n");
 			stdinfd = ch_node->infd;
 			close(ch_node->outfd);
 		}
@@ -165,6 +164,7 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 	else if (node->type == ISPIPEN || node->type == ISPIPEERR)
 	{
 		pipe_node *pip_node = check(node->pip_count);
+		printf("count:%d\n", node->pip_count);
 
 		if (pip_node == NULL)
 		{
@@ -178,7 +178,16 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 			pip_node->outfd = pipn[1];
 			pip_node->next = NULL;
 			push_pipe(&pip_node);
+			printf("no find pipe infd:%d\n", pip_node->infd);
+			printf("no find pipe outfd:%d\n", pip_node->outfd);
 		}
+
+		else
+		{
+			printf("find pipe infd:%d\n", pip_node->infd);
+			printf("find pipe outfd:%d\n", pip_node->outfd);
+		}
+		
 
 		if (node->type == ISPIPEN)
 		{
