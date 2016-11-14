@@ -10,8 +10,17 @@
 #include "shell.h"
 
 
+void wait4_child(int signo)
+{
+	int status;  
+	while(waitpid(-1, &status, WNOHANG) > 0);  
+}
+
 int main()
 {
+	//kill zombie
+	signal(SIGCHLD, wait4_child);
+
 	int sockfd;
 	struct sockaddr_in mysocket;
 
