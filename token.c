@@ -63,10 +63,12 @@ void print_node()
 	token_node *t = front;
 	while(t != NULL)
 	{
+		printf("aa\n");
 		printf("token:%s\n", t->token);
 		printf("type:%d\n\n", t->token_type);
 		t = t->next;
 	}
+	printf("hi\n");
 }
 
 void tokenizer(int cfd)
@@ -78,18 +80,17 @@ void tokenizer(int cfd)
 	size_t i;
 	size_t recvsize = 0;
 
+	printf("precount\n");
 	recvsize = read(cfd, buf, 10010);
 	printf("size:%lu\n", recvsize);
 
-	if (!(buf[recvsize-1] == 0x0a || (buf[recvsize-1] >= 0x30 && buf[recvsize-1] <= 0x39) || (buf[recvsize-1] >= 0x41 && buf[recvsize-1] <= 0x5a) || (buf[recvsize-1] >= 0x61 && buf[recvsize-1] <= 0x7a)))
-		buf[recvsize-1] == '\0';
 	split(&token_array, buf, " ", &token_n);
 	
 	for (i = 0; i < token_n; i++)
 	{
 
-		printf("token name:%s\n", token_array[i]);
-		printf("token size:%lu\n", strlen(token_array[i]));
+		//printf("token name:%s\n", token_array[i]);
+		//printf("token size:%lu\n", strlen(token_array[i]));
 		token_node *tnode = malloc(sizeof(token_node));
 		if (token_array[i][strlen(token_array[i])-1] == '\n')
 		{
@@ -141,13 +142,17 @@ void tokenizer(int cfd)
 	}
 
 	free(token_array);
-	print_node();
+	printf("count\n");
+	//print_node();
 }
 
 token_node *get_node(int cfd)
 {
 	if (front == NULL)
+	{
+		rear = NULL;
 		tokenizer(cfd);
+	}
 
 	return pull_node();
 

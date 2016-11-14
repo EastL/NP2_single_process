@@ -17,7 +17,7 @@ void split(char ***arr, char *str, const char *del, size_t *count)
 
 	while (s != NULL)
 	{
-		printf("util:%s\n", s);
+		//printf("util:%s\n", s);
 		size_t __count = strlen(s);
 		*(_arr + _count) = malloc(sizeof(char) * (__count + 1));
 		memset(*(_arr + _count), 0, (__count + 1));

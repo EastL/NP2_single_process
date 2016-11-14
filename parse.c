@@ -30,21 +30,22 @@ void parse(int sfd)
 	
 	do
 	{
-		printf("YO!\n");
-		printf("name:%s\n", current_node->token);
+		//printf("name:%s\n", current_node->token);
 		type = current_node->token_type;
 		next_node = get_node(sfd);
+/*
 		if (next_node != NULL)
 		{
 			printf("%s\n", next_node->token);
 			printf("%d\n", next_node->token_type);
 		}
+*/
 		next_type = next_node->token_type;
 		if (last_node != NULL)
 		{
-			printf("hii\n");
+			//printf("hii\n");
 			last_type = last_node->token_type;
-			printf("hiiiiii\n");
+			//printf("hiiiiii\n");
 		}
 		//cmd or argv
 		if (type == CMDF)
