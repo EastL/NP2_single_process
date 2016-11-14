@@ -134,13 +134,20 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 
 	if (node->is_init)
 	{
-		printf("yyy\n");
 		pipe_node *ch_node = NULL;
-		ch_node = check(0);
+		ch_node = check(0, 0);
 		if (ch_node != NULL)
 		{
 			stdinfd = ch_node->infd;
 			close(ch_node->outfd);
+		}
+
+		pipe_node *cherr_node = NULL;
+		cherr_node = check(0, 1);
+		if (cherr_node != NULL)
+		{
+			stdinfd = cherr_node->infd;
+			close(cherr_node->outfd);
 		}
 	}
 
@@ -163,7 +170,7 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 
 	else if (node->type == ISPIPEN || node->type == ISPIPEERR)
 	{
-		pipe_node *pip_node = check(node->pip_count);
+		pipe_node *pip_node = check(node->pip_count, (node->type == ISPIPEERR ? 1:0));
 		printf("count:%d\n", node->pip_count);
 
 		if (pip_node == NULL)
@@ -177,7 +184,7 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 			pip_node->infd = pipn[0];
 			pip_node->outfd = pipn[1];
 			pip_node->next = NULL;
-			push_pipe(&pip_node);
+			push_pipe(&pip_node, (node->type == ISPIPEERR ? 1:0));
 			printf("no find pipe infd:%d\n", pip_node->infd);
 			printf("no find pipe outfd:%d\n", pip_node->outfd);
 		}
@@ -208,10 +215,14 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 	printf("type:%d\n", node->type);
 	printf("infd:%d\n", stdinfd);
 	printf("outfd:%d\n", stdoutfd);
+	printf("errfd:%d\n", stderrfd);
 
 	//last command, decress
 	if (node->is_new)
-		decress_count();
+	{
+		decress_count(0);
+		decress_count(1);
+	}
 
 	int pid = fork();
 
@@ -237,6 +248,13 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 			close(1);
 			dup(stdoutfd);
 			close(stdoutfd);
+		}
+
+		if (stderrfd != -1)
+		{
+			close(2);
+			dup(stderrfd);
+			close(stderrfd);
 		}
 
 		execvp(node->cmd, node->arg);

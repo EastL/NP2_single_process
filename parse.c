@@ -145,7 +145,7 @@ void parse(int sfd)
 			node->type = ISPIPEN;
 			if (next_type == NEWLINE)
 				node->is_new = 1;
-			node->pip_count = current_node->token[1] - '0';
+			node->pip_count = atoi(current_node->token + 1);
 			printf("%d\n", node->pip_count);
 
 			push_cmd(&node);
@@ -162,6 +162,7 @@ void parse(int sfd)
 			if (next_type == NEWLINE)
 				node->is_new = 1;
 			node->type = ISPIPEERR;
+			node->pip_count = atoi(current_node->token + 1);
 			push_cmd(&node);
 		}
 

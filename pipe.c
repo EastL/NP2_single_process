@@ -14,24 +14,46 @@ pipe_node *pipe_rear = NULL;
 pipe_node *err_pipe_front = NULL;
 pipe_node *err_pipe_rear = NULL;
 
-void push_pipe(pipe_node **node)
+void push_pipe(pipe_node **node, int err)
 {
-	if (pipe_front == NULL)
+	if (err)
 	{
-		pipe_front = pipe_rear = *node;
+		if (err_pipe_front == NULL)
+		{
+			err_pipe_front = err_pipe_rear = *node;
+		}
+
+		else
+		{
+			err_pipe_rear->next = *node;
+			err_pipe_rear = *node;
+		}
 	}
 
 	else
 	{
-		pipe_rear->next = *node;
-		pipe_rear = *node;
+		if (pipe_front == NULL)
+		{
+			pipe_front = pipe_rear = *node;
+		}
+
+		else
+		{
+			pipe_rear->next = *node;
+			pipe_rear = *node;
+		}
 	}
 }
 
 
-pipe_node *check(int count)
+pipe_node *check(int count, int err)
 {
-	pipe_node *temp = pipe_front;
+	pipe_node *temp;
+	if (err)
+		temp = err_pipe_front;
+	else
+		temp = pipe_front;
+
 	pipe_node *ret = NULL;
 	while (temp != NULL)
 	{
@@ -54,9 +76,13 @@ void free_pipe(pipe_node *node)
 	free(node);
 }
 
-void decress_count()
+void decress_count(int err)
 {
-	pipe_node *temp = pipe_front;
+	pipe_node *temp;
+	if (err)
+		temp = err_pipe_front;
+	else
+		temp = pipe_front;
 	pipe_node *pre = NULL;
 
 	while (temp != NULL)
@@ -69,11 +95,18 @@ void decress_count()
 			//do unlink and free
 			if (pre == NULL)
 			{
-				pipe_front = temp->next;
+				if (err)
+					err_pipe_front = temp->next;
+				else
+					pipe_front = temp->next;
+
 				free_pipe(temp);
 
 				//for next
-				temp = pipe_front;
+				if (err)
+					temp = err_pipe_front;
+				else
+					temp = pipe_front;
 			}
 			else
 			{
