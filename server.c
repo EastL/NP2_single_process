@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <netdb.h>
 #include "shell.h"
 
 
@@ -14,6 +15,49 @@ void wait4_child(int signo)
 {
 	int status;  
 	while(waitpid(-1, &status, WNOHANG) > 0);  
+}
+
+int passivesock(const char *service, const char *transport, int qlen)
+{
+	struct servent  *pse;
+	struct protoent *ppe;
+	struct sockaddr_in sin;
+
+	int s, type;
+
+	memset(&sin, 0, sizeof(sin));
+	sin.sin_family = AF_INET;
+	sin.sin_addr.s_addr = INADDR_ANY;
+
+	if ( pse = getservbyname(service, transport) )  
+		sin.sin_port = htons(ntohs((unsigned short)pse->s_port));  
+
+	else if ((sin.sin_port=htons((unsigned short)atoi(service))) == 0)  
+		perror("can't get service entry\n");
+
+	if ( (ppe = getprotobyname(transport)) == 0)
+		perror("can't get protocol entry\n");
+
+	if (strcmp(transport, "udp") == 0)
+		type = SOCK_DGRAM;
+	
+	else
+		type = SOCK_STREAM;
+
+	
+	s = socket(PF_INET, type, ppe->p_proto);
+
+	int sock_opt = 1 ;
+	if (setsockopt(s,SOL_SOCKET,SO_REUSEADDR,(void *)&sock_opt,sizeof(sock_opt)) == -1)
+		perror("setsockopt error");
+
+	if (bind(s, (struct sockaddr *)&sin, sizeof(sin)) < 0)
+		perror("bind error");
+
+	if (type == SOCK_STREAM && listen(s, qlen) < 0)
+		perror("listen error");
+	
+	return s;
 }
 
 int main()
