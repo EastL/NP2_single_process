@@ -29,7 +29,7 @@ int main()
 	bzero(&mysocket, sizeof(mysocket));
 	mysocket.sin_family = AF_INET;
 	mysocket.sin_addr.s_addr = INADDR_ANY;
-	mysocket.sin_port = htons(3421);
+	mysocket.sin_port = htons(13421);
 
 	int sock_opt = 1 ;
 	setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,(void *)&sock_opt,sizeof(sock_opt));

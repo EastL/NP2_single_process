@@ -88,6 +88,21 @@ void shell(int client_fd)
 				free_cmd(current_cmd);
 				current_cmd = pull_cmd();
 			}
+
+			else if (strncmp(current_cmd->cmd, "removeenv", 9) == 0)
+			{
+				if (current_cmd->arg[1] == NULL)
+				{
+					char *ts = "Please give args.\n";
+					write(client_fd, ts, strlen(ts));
+					current_cmd = pull_cmd();
+					continue;
+				}
+
+				setenv(current_cmd->arg[1], "", 1);
+				free_cmd(current_cmd);
+				current_cmd = pull_cmd();
+			}
 			
 			else if (strncmp(current_cmd->cmd, "exit", 4) == 0)
 			{
@@ -104,6 +119,11 @@ void shell(int client_fd)
 					write(client_fd, unkown, strlen(unkown));
 					write(client_fd, current_cmd->cmd, strlen(current_cmd->cmd));
 					write(client_fd, untail, strlen(untail));
+
+					//last command, decress
+					decress_count(0);
+					decress_count(1);
+
 					free_cmd(current_cmd);
 					free_cmd_line();
 					current_cmd = pull_cmd();
@@ -198,13 +218,10 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 			printf("find pipe outfd:%d\n", pip_node->outfd);
 		}
 		
-		if (node->type == ISPIPEN)
-		{
-			stdoutfd = pip_node->outfd;
-			pipe_n = 1;
-		}
+		stdoutfd = pip_node->outfd;
+		pipe_n = 1;
 
-		else
+		if (node->type == ISPIPEERR)
 		{
 			stderrfd = pip_node->outfd;
 			pipe_err = 1;
@@ -249,7 +266,8 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 		{
 			close(1);
 			dup(stdoutfd);
-			close(stdoutfd);
+			if (stderrfd == -1)
+				close(stdoutfd);
 		}
 
 		if (stderrfd != -1)
