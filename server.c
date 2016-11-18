@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <netdb.h>
 #include "shell.h"
-
+#include "user.h"
 
 void wait4_child(int signo)
 {
@@ -65,31 +65,59 @@ int main()
 	//kill zombie
 	signal(SIGCHLD, wait4_child);
 
-	int sockfd;
-	struct sockaddr_in mysocket;
+	//create my socket
+	char port_service[5];
+	sprintf(port_service, "%d", 13421);
 
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	int my_fd = passivesock(port_service, "tcp", 5);
 
-	bzero(&mysocket, sizeof(mysocket));
-	mysocket.sin_family = AF_INET;
-	mysocket.sin_addr.s_addr = INADDR_ANY;
-	mysocket.sin_port = htons(13421);
-
-	int sock_opt = 1 ;
-	setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,(void *)&sock_opt,sizeof(sock_opt));
-	bind(sockfd, (struct sockaddr*) &mysocket, sizeof(mysocket));
-	listen(sockfd, 20);
-
+	//client socket
 	int clientfd;
 	struct sockaddr_in client_socket;
 	int cl_len = sizeof(client_socket);
 
+	//set select
+	fd_set rfds;
+	fd_set afds;
+	int nfds = getdtablesize();
+
+	FD_ZERO(&afds);
+	FD_SET(my_fd, &afds);
+
 	while(1)
 	{
-		if ((clientfd = accept(sockfd, (struct sockaddr*)&client_socket, &cl_len)) < 0)
+		memcpy(&rfds, &afds, sizeof(rfds));
+		if (slelect(nfds, &rfds, NULL, NULL, NULL) < 0)
+			perror("select error");
+
+		if (FD_ISSET(my_fd, &rfds))
 		{
-			printf("Accept error!");
-			continue;
+			//accept client
+			if ((clientfd = accept(sockfd, (struct sockaddr*)&client_socket, &cl_len)) < 0)
+			{
+				printf("Accept error!");
+				continue;
+			}
+
+			//add client info
+			user_node *user = malloc(sizeof(user_node));
+			memset(user, 0, sizeof(use_node));
+
+			user->user_fd = clientfd;
+			user->name = malloc(10);
+			memset(user->name, 0, 10);
+			user->name = "(no name)";
+			
+			push_user(user);
+
+			//broadcast
+		
+			//set afds
+			FD_SET(clientfd, &afds);
+		}
+
+		else
+		{
 		}
 
 		int chpid = fork();
