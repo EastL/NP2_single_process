@@ -13,7 +13,7 @@
 #include "util.h"
 #include "pipe.h"
 
-void shell(int client_fd)
+int shell(int client_fd)
 {
 	char *shellsign = "% ";
 	char *line = NULL;
@@ -23,7 +23,7 @@ void shell(int client_fd)
 	if (client_fd < 0)
 	{
 		printf("Error, wrong fd:%d\n", client_fd);
-		return;
+		return -1;
 	}
 
 
@@ -65,6 +65,7 @@ void shell(int client_fd)
 			{
 				char *ts = "Please give args.\n";
 				write(client_fd, ts, strlen(ts));
+				fflush(stdout);
 				current_cmd = pull_cmd();
 				continue;
 			}
@@ -97,8 +98,7 @@ void shell(int client_fd)
 		
 		else if (strncmp(current_cmd->cmd, "exit", 4) == 0)
 		{
-			close(client_fd);
-			return;
+			return -1;
 		}
 
 		else
@@ -133,7 +133,7 @@ void shell(int client_fd)
 	}
 
 	write(client_fd, shellsign, strlen(shellsign));
-	return;
+	return 0;
 }
 
 int execute_node(cmd_node *node, int client_fd, int *next_n)

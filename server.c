@@ -67,7 +67,7 @@ int main()
 	signal(SIGCHLD, wait4_child);
 
 	//create my socket
-	char port_service[5];
+	char port_service[10];
 	sprintf(port_service, "%d", 13421);
 
 	int my_fd = passivesock(port_service, "tcp", 5);
@@ -115,8 +115,14 @@ int main()
 			user->name = malloc(10);
 			memset(user->name, 0, 10);
 			user->name = "(no name)";
+			user->next = NULL;
 			
 			push_user(&user_list_front, &user_list_rear, user);
+			printf("added : %x\n", user);
+			printf("added next: %x\n", user->next);
+						printf(" front:0x%x\n", user_list_front);
+						printf(" front next:0x%x\n", user_list_front->next);
+						printf(" rear:0x%x\n", user_list_rear);
 
 			//welcome msg
 			write(clientfd, welcome, strlen(welcome));
@@ -131,15 +137,42 @@ int main()
 
 		else
 		{
-			printf("yoo\n");
+			int ret_sh = -1;
 			//find user for open shell
+			int i = 0;
 			user_node *active_user = user_list_front;
 			while (active_user != NULL)
 			{
+				printf("%d before front:0x%x\n", i, user_list_front);
+				printf("%d before front next:0x%x\n", i, user_list_front->next);
+				printf("%d before rear:0x%x\n", i, user_list_rear);
 				if (FD_ISSET(active_user->user_fd, &rfds))
-					shell(active_user->user_fd);
+				{
+					ret_sh = shell(active_user->user_fd);
+					if (ret_sh == -1)
+					{
+						printf("front:0x%x\n", user_list_front);
+						printf("front next:0x%x\n", user_list_front->next);
+						printf("rear:0x%x\n", user_list_rear);
+						close(active_user->user_fd);
+						unlink_user(&user_list_front, &user_list_rear, active_user);
+						FD_CLR(active_user->user_fd, &afds);
+						user_node *temp_user = active_user;
+						active_user = active_user->next;
+						remove_user(temp_user);
+					}
+					user_node *temp = user_list_front;
+					while (temp != NULL)
+					{
+						printf("list:%x\n", temp);
+						temp = temp->next;
+					}
+				}
 
-				active_user = active_user->next;
+				else
+				{
+					active_user = active_user->next;
+				}
 			}
 			
 		}

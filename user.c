@@ -15,14 +15,14 @@ void push_user(user_node **front, user_node **rear, user_node *node)
 
 	else
 	{
-		(*rear)->next = node;
+		user_node *temp = *rear;
+		temp->next = node;
 		*rear = node;
 	}
 }
 
 void remove_user(user_node *node)
 {
-	free(node->name);
 	node->name = NULL;
 	node->user_fd = 0;
 	node->user_pipe_front = NULL;
@@ -45,14 +45,18 @@ void unlink_user(user_node **front, user_node **rear, user_node *node)
 
 	while(cur != NULL)
 	{
+
+		printf("cur:0x%x\n", cur);
+		printf("cur->next:0x%x\n", cur->next);
+		printf("pre:0x%x\n", pre);
+		printf("node:0x%x\n", node);
+		
 		if (cur == node)
 		{
 			if (pre == NULL)
 			{
-				//only node
-				*front = NULL;
-				*rear = NULL;
-				remove_user(node);
+				//first node
+				*front = node->next;
 			}
 
 			else
@@ -62,13 +66,11 @@ void unlink_user(user_node **front, user_node **rear, user_node *node)
 					//last node
 					pre->next = NULL;
 					*rear = pre;
-					remove_user(node);
 				}
 				
 				else
 				{
 					pre->next = cur->next;
-					remove_user(node);
 				}
 			}
 
@@ -76,7 +78,10 @@ void unlink_user(user_node **front, user_node **rear, user_node *node)
 		}
 
 		else
+		{
+			pre = cur;
 			cur = cur->next;
+		}
 	}
 }
 
