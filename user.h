@@ -19,6 +19,10 @@ struct _user
 	struct _user *next;
 };
 
-typedef _user user_node;
+typedef struct _user user_node;
+
+void push_user(user_node **front, user_node **rear, user_node *node);
+void remove_user(user_node *node);
+void unlink_user(user_node **front, user_node **rear, user_node *node);
 
 #endif

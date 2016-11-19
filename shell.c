@@ -15,7 +15,6 @@
 
 void shell(int client_fd)
 {
-	char *welcome = "****************************************\n** Welcome to the information server. **\n****************************************\n";
 	char *shellsign = "% ";
 	char *line = NULL;
 	ssize_t bufsize = 0;
@@ -31,117 +30,110 @@ void shell(int client_fd)
 	//set env
 	setenv("PATH", "bin:.", 1);
 
-	printf("accept client %d\n", client_fd);
-
-	//welcome msg
-	write(client_fd, welcome, strlen(welcome));
-
 	line = malloc(sizeof(char) * 10010);
 
-	do
+
+	//read and parsing line
+	parse(client_fd);
+	print_cmd();
+
+	//execute process
+	cmd_node *current_cmd = pull_cmd();
+
+	int next_pipe_num = 0;
+
+	while (current_cmd != NULL)
 	{
-		write(client_fd, shellsign, strlen(shellsign));
-
-		//read and parsing line
-		parse(client_fd);
-		print_cmd();
-
-		//execute process
-		cmd_node *current_cmd = pull_cmd();
-
-		int next_pipe_num = 0;
-
-		while (current_cmd != NULL)
+		if (strncmp(current_cmd->cmd, "setenv", 6) == 0)
 		{
-			if (strncmp(current_cmd->cmd, "setenv", 6) == 0)
+			if (current_cmd->arg[1] == NULL || current_cmd->arg[2] == NULL)
 			{
-				if (current_cmd->arg[1] == NULL || current_cmd->arg[2] == NULL)
-				{
-					char *ts = "Please give args.\n";
-					write(client_fd, ts, strlen(ts));
-					current_cmd = pull_cmd();
-					continue;
-				}
-
-				setenv(current_cmd->arg[1], current_cmd->arg[2], 1);
-				free_cmd(current_cmd);
+				char *ts = "Please give args.\n";
+				write(client_fd, ts, strlen(ts));
 				current_cmd = pull_cmd();
+				continue;
 			}
 
-			else if (strncmp(current_cmd->cmd, "printenv", 8) == 0)
-			{
-				if (current_cmd->arg[1] == NULL)
-				{
-					char *ts = "Please give args.\n";
-					write(client_fd, ts, strlen(ts));
-					current_cmd = pull_cmd();
-					continue;
-				}
+			setenv(current_cmd->arg[1], current_cmd->arg[2], 1);
+			free_cmd(current_cmd);
+			current_cmd = pull_cmd();
+		}
 
-				//char *env_name = malloc(strlen(current_cmd->arg[1]) - 1);
-				//strncpy(env_name, current_cmd->arg[1], (strlen(current_cmd->arg[1]) - 1));
-				char *env_val = getenv(current_cmd->arg[1]);//sooooock
-				char *ret = malloc(strlen(env_val) + strlen(current_cmd->arg[1]) + 4);
-				sprintf(ret, "%s=%s\n", current_cmd->arg[1], env_val);
-				
-				write(client_fd, ret, strlen(ret));
-				free_cmd(current_cmd);
+		else if (strncmp(current_cmd->cmd, "printenv", 8) == 0)
+		{
+			if (current_cmd->arg[1] == NULL)
+			{
+				char *ts = "Please give args.\n";
+				write(client_fd, ts, strlen(ts));
 				current_cmd = pull_cmd();
+				continue;
 			}
 
-			else if (strncmp(current_cmd->cmd, "removeenv", 9) == 0)
-			{
-				if (current_cmd->arg[1] == NULL)
-				{
-					char *ts = "Please give args.\n";
-					write(client_fd, ts, strlen(ts));
-					current_cmd = pull_cmd();
-					continue;
-				}
-
-				setenv(current_cmd->arg[1], "", 1);
-				free_cmd(current_cmd);
-				current_cmd = pull_cmd();
-			}
+			//char *env_name = malloc(strlen(current_cmd->arg[1]) - 1);
+			//strncpy(env_name, current_cmd->arg[1], (strlen(current_cmd->arg[1]) - 1));
+			char *env_val = getenv(current_cmd->arg[1]);//sooooock
+			char *ret = malloc(strlen(env_val) + strlen(current_cmd->arg[1]) + 4);
+			sprintf(ret, "%s=%s\n", current_cmd->arg[1], env_val);
 			
-			else if (strncmp(current_cmd->cmd, "exit", 4) == 0)
+			write(client_fd, ret, strlen(ret));
+			free_cmd(current_cmd);
+			current_cmd = pull_cmd();
+		}
+
+		else if (strncmp(current_cmd->cmd, "removeenv", 9) == 0)
+		{
+			if (current_cmd->arg[1] == NULL)
 			{
-				return;
+				char *ts = "Please give args.\n";
+				write(client_fd, ts, strlen(ts));
+				current_cmd = pull_cmd();
+				continue;
 			}
+
+			setenv(current_cmd->arg[1], "", 1);
+			free_cmd(current_cmd);
+			current_cmd = pull_cmd();
+		}
+		
+		else if (strncmp(current_cmd->cmd, "exit", 4) == 0)
+		{
+			close(client_fd);
+			return;
+		}
+
+		else
+		{
+			char *envpath = getenv("PATH");
+			if (check_cmd_exist(current_cmd->cmd, envpath) == -1)
+			{
+				char *unkown = "Unknown command: [";
+				char *untail = "].\n";
+				write(client_fd, unkown, strlen(unkown));
+				write(client_fd, current_cmd->cmd, strlen(current_cmd->cmd));
+				write(client_fd, untail, strlen(untail));
+
+				//last command, decress
+				decress_count(0);
+				decress_count(1);
+
+				free_cmd(current_cmd);
+				free_cmd_line();
+				current_cmd = pull_cmd();
+				continue;
+			}	
 
 			else
 			{
-				char *envpath = getenv("PATH");
-				if (check_cmd_exist(current_cmd->cmd, envpath) == -1)
-				{
-					char *unkown = "Unknown command: [";
-					char *untail = "].\n";
-					write(client_fd, unkown, strlen(unkown));
-					write(client_fd, current_cmd->cmd, strlen(current_cmd->cmd));
-					write(client_fd, untail, strlen(untail));
-
-					//last command, decress
-					decress_count(0);
-					decress_count(1);
-
-					free_cmd(current_cmd);
-					free_cmd_line();
-					current_cmd = pull_cmd();
-					continue;
-				}	
-
-				else
-				{
-					//printf("next:%s\n", current_cmd->next->cmd);
-					execute_node(current_cmd, client_fd, &next_pipe_num);
-					free_cmd(current_cmd);
-					current_cmd = pull_cmd();
-				}
+				//printf("next:%s\n", current_cmd->next->cmd);
+				execute_node(current_cmd, client_fd, &next_pipe_num);
+				free_cmd(current_cmd);
+				current_cmd = pull_cmd();
 			}
 		}
+	}
 
-	} while(1);
-	
+	write(client_fd, shellsign, strlen(shellsign));
+	return;
 }
 
 int execute_node(cmd_node *node, int client_fd, int *next_n)

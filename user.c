@@ -5,18 +5,18 @@
 #include <unistd.h>
 #include "user.h"
 
-void push_user(user_node *front, user_node *rear, user_node *node)
+void push_user(user_node **front, user_node **rear, user_node *node)
 {
-	if (front == NULL)
+	if (*front == NULL)
 	{
-		rear = NULL;
-		front = rear = node;
+		*rear = NULL;
+		*front = *rear = node;
 	}
 
 	else
 	{
-		rear->next = node;
-		rear = node;
+		(*rear)->next = node;
+		*rear = node;
 	}
 }
 
@@ -32,16 +32,16 @@ void remove_user(user_node *node)
 	node->next = NULL;
 }
 
-void unlink_user(user_node *front, user_node *rear, user_node *node)
+void unlink_user(user_node **front, user_node **rear, user_node *node)
 {
-	if (front == node && rear == node)
+	if (*front == node && *rear == node)
 	{
-		front = NULL;
-		rear = NULL;
+		*front = NULL;
+		*rear = NULL;
 	}
 
 	user_node *pre = NULL;
-	user_node *cur = front;
+	user_node *cur = *front;
 
 	while(cur != NULL)
 	{
@@ -50,18 +50,18 @@ void unlink_user(user_node *front, user_node *rear, user_node *node)
 			if (pre == NULL)
 			{
 				//only node
-				front = NULL;
-				rear = NULL;
+				*front = NULL;
+				*rear = NULL;
 				remove_user(node);
 			}
 
 			else
 			{
-				if (rear == node)
+				if (*rear == node)
 				{
 					//last node
 					pre->next = NULL;
-					rear = pre;
+					*rear = pre;
 					remove_user(node);
 				}
 				
@@ -80,7 +80,9 @@ void unlink_user(user_node *front, user_node *rear, user_node *node)
 	}
 }
 
+/*
 void broadcast_message(const char *m)
 {
 	
 }
+*/

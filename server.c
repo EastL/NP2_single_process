@@ -62,6 +62,7 @@ int passivesock(const char *service, const char *transport, int qlen)
 
 int main()
 {
+	char *welcome = "****************************************\n** Welcome to the information server. **\n****************************************\n% ";
 	//kill zombie
 	signal(SIGCHLD, wait4_child);
 
@@ -76,6 +77,10 @@ int main()
 	struct sockaddr_in client_socket;
 	int cl_len = sizeof(client_socket);
 
+	//user info
+	user_node *user_list_front = NULL;
+	user_node *user_list_rear = NULL;
+
 	//set select
 	fd_set rfds;
 	fd_set afds;
@@ -86,29 +91,37 @@ int main()
 
 	while(1)
 	{
+		printf("hhhhh\n");
 		memcpy(&rfds, &afds, sizeof(rfds));
-		if (slelect(nfds, &rfds, NULL, NULL, NULL) < 0)
+		if (select(nfds, &rfds, NULL, NULL, NULL) < 0)
 			perror("select error");
+		printf("select!!\n");
 
 		if (FD_ISSET(my_fd, &rfds))
 		{
 			//accept client
-			if ((clientfd = accept(sockfd, (struct sockaddr*)&client_socket, &cl_len)) < 0)
+			if ((clientfd = accept(my_fd, (struct sockaddr*)&client_socket, &cl_len)) < 0)
 			{
 				printf("Accept error!");
 				continue;
 			}
 
+			printf("accept %d\n", clientfd);
 			//add client info
 			user_node *user = malloc(sizeof(user_node));
-			memset(user, 0, sizeof(use_node));
+			memset(user, 0, sizeof(user_node));
 
 			user->user_fd = clientfd;
 			user->name = malloc(10);
 			memset(user->name, 0, 10);
 			user->name = "(no name)";
 			
-			push_user(user);
+			push_user(&user_list_front, &user_list_rear, user);
+
+			//welcome msg
+			write(clientfd, welcome, strlen(welcome));
+			printf("welcome\n");
+			
 
 			//broadcast
 		
@@ -118,23 +131,19 @@ int main()
 
 		else
 		{
+			printf("yoo\n");
+			//find user for open shell
+			user_node *active_user = user_list_front;
+			while (active_user != NULL)
+			{
+				if (FD_ISSET(active_user->user_fd, &rfds))
+					shell(active_user->user_fd);
+
+				active_user = active_user->next;
+			}
+			
 		}
 
-		int chpid = fork();
-
-		if (chpid == 0)
-		{
-			shell(clientfd);
-			printf("bye~\n");
-			exit(0);
-		}
-		
-		else
-		{
-			int status;
-			waitpid(chpid, &status, 0);
-			close(clientfd);
-		}
 	}
 
 	return 0;
