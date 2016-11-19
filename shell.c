@@ -12,20 +12,14 @@
 #include "parse.h"
 #include "util.h"
 #include "pipe.h"
+#include "user.h"
 
-int shell(int client_fd)
+int shell(user_node *client_fd)
 {
 	char *shellsign = "% ";
 	char *line = NULL;
 	ssize_t bufsize = 0;
 	cmd_node *cmd_list;
-
-	if (client_fd < 0)
-	{
-		printf("Error, wrong fd:%d\n", client_fd);
-		return -1;
-	}
-
 
 	//set env
 	setenv("PATH", "bin:.", 1);
@@ -38,7 +32,7 @@ int shell(int client_fd)
 	print_cmd();
 
 	//execute process
-	cmd_node *current_cmd = pull_cmd();
+	cmd_node *current_cmd = pull_cmd(&(client_fd->user_cmd_front), &(client_fd->user_cmd_rear));
 
 	int next_pipe_num = 0;
 

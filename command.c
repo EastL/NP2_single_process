@@ -9,32 +9,32 @@
 static cmd_node *cfront = NULL;
 static cmd_node *crear = NULL;
 
-void push_cmd(cmd_node **node)
+void push_cmd(cmd_node **cfront, cmd_node **crear, cmd_node **node)
 {
-	if (cfront == NULL)
-		cfront = crear = *node;
+	if (*cfront == NULL)
+		*cfront = *crear = *node;
 	else
 	{
-		crear->next = *node;
-		crear = *node;
+		(*crear)->next = *node;
+		*crear = *node;
 	}
 }
 
-cmd_node *pull_cmd()
+cmd_node *pull_cmd(cmd_node **cfront, cmd_node **crear)
 {
-	if (cfront == NULL)
+	if (*cfront == NULL)
 	{
 		printf("ya!\n");
 		return NULL;
 	}
-	cmd_node *temp = cfront;
-	cfront = cfront->next;
+	cmd_node *temp = *cfront;
+	*cfront = (*cfront)->next;
 	return temp;
 }
 
-void print_cmd()
+void print_cmd(cmd_node **cfront)
 {
-	cmd_node *tmp = cfront;
+	cmd_node *tmp = *cfront;
 	while (tmp != NULL)
 	{
 		printf("cmd:%s\n", tmp->cmd);
@@ -58,14 +58,14 @@ void free_cmd(cmd_node *node)
 	free(node);
 }
 
-void free_cmd_line()
+void free_cmd_line(cmd_node **cfront, cmd_node **crear)
 {
 	cmd_node *temp = NULL;
-	while (cfront != NULL)
+	while (*cfront != NULL)
 	{
-		temp = pull_cmd();
+		temp = pull_cmd(cfront, crear);
 		free_cmd(temp);
 	}
 	
-	crear = NULL;
+	*crear = NULL;
 }

@@ -115,14 +115,19 @@ int main()
 			user->name = malloc(10);
 			memset(user->name, 0, 10);
 			user->name = "(no name)";
+			user->user_pipe_front = NULL;
+			user->user_pipe_rear = NULL;
+			user->user_cmd_front = NULL;
+			user->user_cmd_rear = NULL;
+			
 			user->next = NULL;
 			
 			push_user(&user_list_front, &user_list_rear, user);
 			printf("added : %x\n", user);
 			printf("added next: %x\n", user->next);
-						printf(" front:0x%x\n", user_list_front);
-						printf(" front next:0x%x\n", user_list_front->next);
-						printf(" rear:0x%x\n", user_list_rear);
+			printf(" front:0x%x\n", user_list_front);
+			printf(" front next:0x%x\n", user_list_front->next);
+			printf(" rear:0x%x\n", user_list_rear);
 
 			//welcome msg
 			write(clientfd, welcome, strlen(welcome));
@@ -148,7 +153,7 @@ int main()
 				printf("%d before rear:0x%x\n", i, user_list_rear);
 				if (FD_ISSET(active_user->user_fd, &rfds))
 				{
-					ret_sh = shell(active_user->user_fd);
+					ret_sh = shell(active_user);
 					if (ret_sh == -1)
 					{
 						printf("front:0x%x\n", user_list_front);

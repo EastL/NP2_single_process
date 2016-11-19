@@ -21,9 +21,9 @@ struct __cmd
 
 typedef struct __cmd cmd_node;
 
-void push_cmd(cmd_node **node);
-cmd_node *pull_cmd();
-void print_cmd();
+void push_cmd(cmd_node **cfront, cmd_node **crear, cmd_node **node);
+cmd_node *pull_cmd(cmd_node **cfront, cmd_node **crear);
+void print_cmd(cmd_node **cfront);
 void free_cmd(cmd_node *node);
-void free_cmd_line();
+void free_cmd_line(cmd_node **cfront, cmd_node **crear);
 #endif
