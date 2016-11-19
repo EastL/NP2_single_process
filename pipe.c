@@ -7,54 +7,28 @@
 #include "command.h"
 #include "token.h"
 #include "pipe.h"
+#include "user.h"
 
-pipe_node *pipe_front = NULL;
-pipe_node *pipe_rear = NULL;
-
-pipe_node *err_pipe_front = NULL;
-pipe_node *err_pipe_rear = NULL;
-
-void push_pipe(pipe_node **node, int err)
+void push_pipe(pipe_node **pipe_front, pipe_node **pipe_rear, pipe_node **node)
 {
-	if (err)
+	if (*pipe_front == NULL)
 	{
-		if (err_pipe_front == NULL)
-		{
-			err_pipe_front = err_pipe_rear = *node;
-		}
-
-		else
-		{
-			err_pipe_rear->next = *node;
-			err_pipe_rear = *node;
-		}
+		*pipe_front = *pipe_rear = *node;
 	}
 
 	else
 	{
-		if (pipe_front == NULL)
-		{
-			pipe_front = pipe_rear = *node;
-		}
-
-		else
-		{
-			pipe_rear->next = *node;
-			pipe_rear = *node;
-		}
+		(*pipe_rear)->next = *node;
+		*pipe_rear = *node;
 	}
 }
 
 
-pipe_node *check(int count, int err)
+pipe_node *check(pipe_node **pipe_front, int count)
 {
-	pipe_node *temp;
-	if (err)
-		temp = err_pipe_front;
-	else
-		temp = pipe_front;
-
+	pipe_node *temp = *pipe_front;
 	pipe_node *ret = NULL;
+
 	while (temp != NULL)
 	{
 		printf("ffffffind count:%d\n", temp->num);
@@ -76,13 +50,9 @@ void free_pipe(pipe_node *node)
 	free(node);
 }
 
-void decress_count(int err)
+void decress_count(pipe_node **pipe_front, pipe_node **pipe_rear)
 {
-	pipe_node *temp;
-	if (err)
-		temp = err_pipe_front;
-	else
-		temp = pipe_front;
+	pipe_node *temp = *pipe_front;
 	pipe_node *pre = NULL;
 
 	while (temp != NULL)
@@ -95,18 +65,12 @@ void decress_count(int err)
 			//do unlink and free
 			if (pre == NULL)
 			{
-				if (err)
-					err_pipe_front = temp->next;
-				else
-					pipe_front = temp->next;
+				*pipe_front = temp->next;
 
 				free_pipe(temp);
 
 				//for next
-				if (err)
-					temp = err_pipe_front;
-				else
-					temp = pipe_front;
+				temp = *pipe_front;
 			}
 			else
 			{

@@ -115,6 +115,11 @@ int main()
 			user->name = malloc(10);
 			memset(user->name, 0, 10);
 			user->name = "(no name)";
+			user->env_num = 1;
+			bzero(user->env[0], 1024);
+			strcpy(user->env[0], "PATH");
+			bzero(user->envval[0], 1024);
+			strcpy(user->envval[0], "bin:.");
 			user->user_pipe_front = NULL;
 			user->user_pipe_rear = NULL;
 			user->user_cmd_front = NULL;
@@ -166,6 +171,10 @@ int main()
 						active_user = active_user->next;
 						remove_user(temp_user);
 					}
+					
+					else
+						active_user = active_user->next;
+
 					user_node *temp = user_list_front;
 					while (temp != NULL)
 					{

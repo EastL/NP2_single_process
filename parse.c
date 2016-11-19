@@ -7,12 +7,13 @@
 #include "command.h"
 #include "token.h"
 #include "pipe.h"
+#include "user.h"
 
-void parse(int sfd)
+void parse(user_node *sfd)
 {
 	printf("parsing...\n");
 	token_node *last_node = NULL;
-	token_node *current_node = get_node(sfd);
+	token_node *current_node = get_node(sfd->user_fd);
 	printf("parsinggggggggg...\n");
 
 	if (current_node->token_type == NEWLINE)
@@ -30,22 +31,12 @@ void parse(int sfd)
 	
 	do
 	{
-		//printf("name:%s\n", current_node->token);
 		type = current_node->token_type;
-		next_node = get_node(sfd);
-/*
-		if (next_node != NULL)
-		{
-			printf("%s\n", next_node->token);
-			printf("%d\n", next_node->token_type);
-		}
-*/
+		next_node = get_node(sfd->user_fd);
 		next_type = next_node->token_type;
 		if (last_node != NULL)
 		{
-			//printf("hii\n");
 			last_type = last_node->token_type;
-			//printf("hiiiiii\n");
 		}
 		//cmd or argv
 		if (type == CMDF)
@@ -74,14 +65,6 @@ void parse(int sfd)
 
 				if (last_type == PIPE)
 					node->is_init = 0;
-/*
-				//check stdin
-				pipe_node *newnode = check(0);
-				if (newnode != NULL)
-				{
-					node->in = newnode->outfd;
-				}
-*/
 			}
 
 			else if (last_type == CMDF)
@@ -102,60 +85,30 @@ void parse(int sfd)
 			if (next_type == NEWLINE)
 			{
 				node->is_new = 1;
-				push_cmd(&node);
+				push_cmd(&(sfd->user_cmd_front), &(sfd->user_cmd_rear), &node);
 			}
 		}
 
 		else if (type == PIPE)
 		{
 			node->type = ISPIPE;
-			push_cmd(&node);
+			push_cmd(&(sfd->user_cmd_front), &(sfd->user_cmd_rear), &node);
 		} 
 		
 		else if (type == PIPEN)
 		{
-/*
-			pipe_node *get_same_count = check(current_node->token[1] - 0x30);			
-
-			if (get_same_count == NULL)
-			{
-				//creat pipe
-				int pip[2];
-				pipe(pip);
-
-				//old node
-				node->out = pip[1];
-				node->is_pipe_n = 1;
-				push_cmd(&node);
-
-				//pipe node
-				pipe_node *new_node = malloc(sizeof(pipe_node));
-				new_node->num = (current_node->token[1] - 0x30);
-				new_node->infd = pip[0];
-				new_node->outfd = pip[1];
-				new_node->next = NULL;
-				push_pipe(&new_node);
-			}
-
-			else
-			{
-				node->out = get_same_count->infd;
-				push_cmd(&node);
-			}
-*/
 			node->type = ISPIPEN;
 			if (next_type == NEWLINE)
 				node->is_new = 1;
 			node->pip_count = atoi(current_node->token + 1);
 			printf("%d\n", node->pip_count);
 
-			push_cmd(&node);
+			push_cmd(&(sfd->user_cmd_front), &(sfd->user_cmd_rear), &node);
 		}
 
 		else if (type == REDIR)
 		{
 			node->type = ISREDIR;
-			//push_cmd(&node);
 		}
 		
 		else if (type == PIPERR)
@@ -164,7 +117,7 @@ void parse(int sfd)
 				node->is_new = 1;
 			node->type = ISPIPEERR;
 			node->pip_count = atoi(current_node->token + 1);
-			push_cmd(&node);
+			push_cmd(&(sfd->user_cmd_front), &(sfd->user_cmd_rear), &node);
 		}
 
 		if (last_node != NULL)

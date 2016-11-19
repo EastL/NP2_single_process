@@ -6,8 +6,8 @@
 #include "token.h"
 #include "command.h"
 
-static cmd_node *cfront = NULL;
-static cmd_node *crear = NULL;
+//static cmd_node *cfront = NULL;
+//static cmd_node *crear = NULL;
 
 void push_cmd(cmd_node **cfront, cmd_node **crear, cmd_node **node)
 {

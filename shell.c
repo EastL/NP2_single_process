@@ -22,14 +22,15 @@ int shell(user_node *client_fd)
 	cmd_node *cmd_list;
 
 	//set env
-	setenv("PATH", "bin:.", 1);
+	for (int c = 0; c < client_fd->env_num; c++)
+		setenv(client_fd->env[c], client_fd->envval[c], 1);
 
 	line = malloc(sizeof(char) * 10010);
 
 
 	//read and parsing line
 	parse(client_fd);
-	print_cmd();
+	print_cmd(&(client_fd->user_cmd_front));
 
 	//execute process
 	cmd_node *current_cmd = pull_cmd(&(client_fd->user_cmd_front), &(client_fd->user_cmd_rear));
@@ -43,14 +44,37 @@ int shell(user_node *client_fd)
 			if (current_cmd->arg[1] == NULL || current_cmd->arg[2] == NULL)
 			{
 				char *ts = "Please give args.\n";
-				write(client_fd, ts, strlen(ts));
-				current_cmd = pull_cmd();
+				write(client_fd->user_fd, ts, strlen(ts));
+				current_cmd = pull_cmd(&(client_fd->user_cmd_front), &(client_fd->user_cmd_rear));
 				continue;
 			}
 
+			//write to user info
+			int cmp = 0;
+			for (int c = 0; c < client_fd->env_num; c++)
+			{
+				if (strcmp(client_fd->env[c], current_cmd->arg[1]) == 0)
+				{
+					cmp = 1;
+					strcpy(client_fd->envval[c], current_cmd->arg[2]);
+				}
+			}
+
+			if (!cmp)
+			{
+				strcpy(client_fd->env[client_fd->env_num], current_cmd->arg[1]);
+				strcpy(client_fd->envval[client_fd->env_num], current_cmd->arg[2]);
+				client_fd->env_num++;
+			}
+
+			//real set
 			setenv(current_cmd->arg[1], current_cmd->arg[2], 1);
 			free_cmd(current_cmd);
-			current_cmd = pull_cmd();
+
+			//last command, decress
+			decress_count(&(client_fd->user_pipe_front), &(client_fd->user_pipe_rear));
+
+			current_cmd = pull_cmd(&(client_fd->user_cmd_front), &(client_fd->user_cmd_rear));
 		}
 
 		else if (strncmp(current_cmd->cmd, "printenv", 8) == 0)
@@ -58,9 +82,9 @@ int shell(user_node *client_fd)
 			if (current_cmd->arg[1] == NULL)
 			{
 				char *ts = "Please give args.\n";
-				write(client_fd, ts, strlen(ts));
+				write(client_fd->user_fd, ts, strlen(ts));
 				fflush(stdout);
-				current_cmd = pull_cmd();
+				current_cmd = pull_cmd(&(client_fd->user_cmd_front), &(client_fd->user_cmd_rear));
 				continue;
 			}
 
@@ -70,9 +94,13 @@ int shell(user_node *client_fd)
 			char *ret = malloc(strlen(env_val) + strlen(current_cmd->arg[1]) + 4);
 			sprintf(ret, "%s=%s\n", current_cmd->arg[1], env_val);
 			
-			write(client_fd, ret, strlen(ret));
+			write(client_fd->user_fd, ret, strlen(ret));
 			free_cmd(current_cmd);
-			current_cmd = pull_cmd();
+
+			//last command, decress
+			decress_count(&(client_fd->user_pipe_front), &(client_fd->user_pipe_rear));
+
+			current_cmd = pull_cmd(&(client_fd->user_cmd_front), &(client_fd->user_cmd_rear));
 		}
 
 		else if (strncmp(current_cmd->cmd, "removeenv", 9) == 0)
@@ -80,14 +108,18 @@ int shell(user_node *client_fd)
 			if (current_cmd->arg[1] == NULL)
 			{
 				char *ts = "Please give args.\n";
-				write(client_fd, ts, strlen(ts));
-				current_cmd = pull_cmd();
+				write(client_fd->user_fd, ts, strlen(ts));
+				current_cmd = pull_cmd(&(client_fd->user_cmd_front), &(client_fd->user_cmd_rear));
 				continue;
 			}
 
 			setenv(current_cmd->arg[1], "", 1);
 			free_cmd(current_cmd);
-			current_cmd = pull_cmd();
+
+			//last command, decress
+			decress_count(&(client_fd->user_pipe_front), &(client_fd->user_pipe_rear));
+
+			current_cmd = pull_cmd(&(client_fd->user_cmd_front), &(client_fd->user_cmd_rear));
 		}
 		
 		else if (strncmp(current_cmd->cmd, "exit", 4) == 0)
@@ -102,17 +134,16 @@ int shell(user_node *client_fd)
 			{
 				char *unkown = "Unknown command: [";
 				char *untail = "].\n";
-				write(client_fd, unkown, strlen(unkown));
-				write(client_fd, current_cmd->cmd, strlen(current_cmd->cmd));
-				write(client_fd, untail, strlen(untail));
+				write(client_fd->user_fd, unkown, strlen(unkown));
+				write(client_fd->user_fd, current_cmd->cmd, strlen(current_cmd->cmd));
+				write(client_fd->user_fd, untail, strlen(untail));
 
 				//last command, decress
-				decress_count(0);
-				decress_count(1);
+				decress_count(&(client_fd->user_pipe_front), &(client_fd->user_pipe_rear));
 
 				free_cmd(current_cmd);
-				free_cmd_line();
-				current_cmd = pull_cmd();
+				free_cmd_line(&(client_fd->user_cmd_front), &(client_fd->user_cmd_rear));
+				current_cmd = pull_cmd(&(client_fd->user_cmd_front), &(client_fd->user_cmd_rear));
 				continue;
 			}	
 
@@ -121,16 +152,16 @@ int shell(user_node *client_fd)
 				//printf("next:%s\n", current_cmd->next->cmd);
 				execute_node(current_cmd, client_fd, &next_pipe_num);
 				free_cmd(current_cmd);
-				current_cmd = pull_cmd();
+				current_cmd = pull_cmd(&(client_fd->user_cmd_front), &(client_fd->user_cmd_rear));
 			}
 		}
 	}
 
-	write(client_fd, shellsign, strlen(shellsign));
+	write(client_fd->user_fd, shellsign, strlen(shellsign));
 	return 0;
 }
 
-int execute_node(cmd_node *node, int client_fd, int *next_n)
+int execute_node(cmd_node *node, user_node *client_fd, int *next_n)
 {
 	int stdinfd = -1;
 	int stdoutfd = -1;
@@ -141,7 +172,7 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 	if (node->is_init)
 	{
 		pipe_node *ch_node = NULL;
-		ch_node = check(0, 0);
+		ch_node = check(&(client_fd->user_pipe_front), 0);
 		if (ch_node != NULL)
 		{
 			stdinfd = ch_node->infd;
@@ -177,8 +208,7 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 
 	else if (node->type == ISPIPEN || node->type == ISPIPEERR)
 	{
-		//pipe_node *pip_node = check(node->pip_count, (node->type == ISPIPEERR ? 1:0));
-		pipe_node *pip_node = check(node->pip_count, 0);
+		pipe_node *pip_node = check(&(client_fd->user_pipe_front), node->pip_count);
 		printf("count:%d\n", node->pip_count);
 
 		if (pip_node == NULL)
@@ -192,8 +222,7 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 			pip_node->infd = pipn[0];
 			pip_node->outfd = pipn[1];
 			pip_node->next = NULL;
-			//push_pipe(&pip_node, (node->type == ISPIPEERR ? 1:0));
-			push_pipe(&pip_node, 0);
+			push_pipe(&(client_fd->user_pipe_front), &(client_fd->user_pipe_rear), &pip_node);
 			printf("no find pipe infd:%d\n", pip_node->infd);
 			printf("no find pipe outfd:%d\n", pip_node->outfd);
 		}
@@ -224,10 +253,7 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 
 	//last command, decress
 	if (node->is_new)
-	{
-		decress_count(0);
-		decress_count(1);
-	}
+		decress_count(&(client_fd->user_pipe_front), &(client_fd->user_pipe_rear));
 
 	int pid = fork();
 
@@ -236,10 +262,10 @@ int execute_node(cmd_node *node, int client_fd, int *next_n)
 		close(0);
 		close(1);
 		close(2);
-		dup(client_fd);
-		dup(client_fd);
-		dup(client_fd);
-		close(client_fd);
+		dup(client_fd->user_fd);
+		dup(client_fd->user_fd);
+		dup(client_fd->user_fd);
+		close(client_fd->user_fd);
 
 		if (stdinfd != -1)
 		{

@@ -9,6 +9,7 @@ struct _user
 	int user_fd;
 	char env[256][1024];
 	char envval[256][1024];
+	int env_num;
 
 	pipe_node *user_pipe_front;
 	pipe_node *user_pipe_rear;

@@ -12,8 +12,8 @@ struct __pipe
 
 typedef struct __pipe pipe_node;
 
-void push_pipe(pipe_node **node, int err);
-pipe_node *check(int count, int err);
+void push_pipe(pipe_node **pipe_front, pipe_node **pipe_rear, pipe_node **node);
+pipe_node *check(pipe_node **pipe_front, int count);
 void free_pipe(pipe_node *node);
-void decress_count(int err);
+void decress_count(pipe_node **pipe_front, pipe_node **pipe_rear);
 #endif
