@@ -11,6 +11,11 @@
 #include "shell.h"
 #include "user.h"
 
+
+//user info
+user_node *user_list_front = NULL;
+user_node *user_list_rear = NULL;
+
 void wait4_child(int signo)
 {
 	int status;  
@@ -77,9 +82,6 @@ int main()
 	struct sockaddr_in client_socket;
 	int cl_len = sizeof(client_socket);
 
-	//user info
-	user_node *user_list_front = NULL;
-	user_node *user_list_rear = NULL;
 
 	//set select
 	fd_set rfds;

@@ -14,6 +14,10 @@
 #include "pipe.h"
 #include "user.h"
 
+//user info
+extern user_node *user_list_front;
+extern user_node *user_list_rear;
+
 int shell(user_node *client_fd)
 {
 	char *shellsign = "% ";
@@ -72,6 +76,30 @@ int shell(user_node *client_fd)
 			free_cmd(current_cmd);
 
 			//last command, decress
+			decress_count(&(client_fd->user_pipe_front), &(client_fd->user_pipe_rear));
+
+			current_cmd = pull_cmd(&(client_fd->user_cmd_front), &(client_fd->user_cmd_rear));
+		}
+
+		else if (strncmp(current_cmd->cmd, "who", 3) == 0)
+		{
+			char *title = "<sockd>\t<nickname>\t<IP/port>\t\t<indicate me>\n";
+			write(client_fd->user_fd, title, strlen(title));
+
+			user_node *temp_who = user_list_front;
+			while (temp_who != NULL)
+			{
+				char *content = malloc(sizeof(char) * 100);
+				memset(content, 0, 100);
+				if (temp_who == client_fd)
+					sprintf(content, "%d\t%s\t%s/%d\t\t%s\n", temp_who->user_fd, temp_who->name, temp_who->ip, temp_who->port, "<- me");
+				else
+					sprintf(content, "%d\t%s\t%s/%d\n", temp_who->user_fd, temp_who->name, temp_who->ip, temp_who->port);
+					
+				write(client_fd->user_fd, content, strlen(content));
+				temp_who = temp_who->next;
+			}
+			
 			decress_count(&(client_fd->user_pipe_front), &(client_fd->user_pipe_rear));
 
 			current_cmd = pull_cmd(&(client_fd->user_cmd_front), &(client_fd->user_cmd_rear));
