@@ -91,6 +91,9 @@ int main()
 	FD_ZERO(&afds);
 	FD_SET(my_fd, &afds);
 
+	//for client ID
+	int clientID[31] = {0};
+
 	while(1)
 	{
 		printf("hhhhh\n");
@@ -117,6 +120,18 @@ int main()
 			user_node *user = malloc(sizeof(user_node));
 			memset(user, 0, sizeof(user_node));
 
+			//find ID
+			int index;
+			for (index = 1; index < 31; index++)
+			{
+				if (clientID[index] == 0)
+				{
+					clientID[index] = 1;	
+					break;
+				}
+			}
+
+			user->ID = index;
 			user->user_fd = clientfd;
 			user->name = malloc(10);
 			memset(user->name, 0, 10);
@@ -182,6 +197,9 @@ int main()
 
 						close(active_user->user_fd);
 						unlink_user(&user_list_front, &user_list_rear, active_user);
+
+						//clear client ID
+						clientID[active_user->ID] = 0;
 
 						//brocast
 						char *leave_msg = malloc(sizeof(char) * 50);

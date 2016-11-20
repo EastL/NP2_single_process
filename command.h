@@ -12,10 +12,14 @@ struct __cmd
 	char **arg;
 	int arg_count;
 	int pip_count;
+	int pip_process_count_in;
+	int pip_process_count_out;
 	int type;
 	char *file;
 	int is_init;
 	int is_new;
+	int is_pipe_out;
+	int is_pipe_in;
 	struct __cmd *next;
 };
 

@@ -23,6 +23,7 @@ void push_user(user_node **front, user_node **rear, user_node *node)
 
 void remove_user(user_node *node)
 {
+	node->ID = 0;
 	node->name = NULL;
 	node->user_fd = 0;
 	node->user_pipe_front = NULL;
@@ -95,4 +96,18 @@ void broadcast_message(user_node *front, const char *m)
 		write(bro_node->user_fd, "\n% ", 3);
 		bro_node = bro_node->next;
 	}
+}
+
+user_node *search_name(user_node *front, int id)
+{
+	user_node *bro_node = front;
+	
+	while (bro_node != NULL)
+	{
+		if (bro_node->ID == id)
+			break;	
+		bro_node = bro_node->next;
+	}
+	
+	return bro_node;
 }

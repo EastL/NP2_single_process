@@ -14,6 +14,10 @@ int get_token_type(char *str)
 		return PIPEN;
 	else if (regular_match(str, "\\|") == 1)
 		return PIPE;
+	else if (regular_match(str, ">[[:digit:]]+") == 1)
+		return PIPEPOUT;
+	else if (regular_match(str, "<[[:digit:]]+") == 1)
+		return PIPEPIN;
 	else if (regular_match(str, ">") == 1)
 		return REDIR;
 	else if (regular_match(str, "![[:digit:]]+") == 1)

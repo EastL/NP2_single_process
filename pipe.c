@@ -44,6 +44,8 @@ pipe_node *check(pipe_node **pipe_front, int count)
 void free_pipe(pipe_node *node)
 {
 	node->num = 0;
+	node->from = 0;
+	node->to = 0;
 	node->infd = 0;
 	node->outfd = 0;
 	node->next = NULL;
@@ -87,5 +89,75 @@ void decress_count(pipe_node **pipe_front, pipe_node **pipe_rear)
 			temp = temp->next;
 		}
 
+	}
+}
+
+pipe_node *search_pipe(int from, int to)
+{
+	extern pipe_node *pipe_client_front;
+	extern pipe_node *pipe_client_rear;
+
+	pipe_node *temp = pipe_client_front;
+	while (temp != NULL)
+	{
+		if (temp->from == from && temp->to == to)
+			break;
+		temp = temp->next;
+	}
+
+	return temp;
+}
+
+void put_pipe(pipe_node *node)
+{
+	extern pipe_node *pipe_client_front;
+	extern pipe_node *pipe_client_rear;
+
+	if (pipe_client_front == NULL)
+	{
+		pipe_client_front = pipe_client_rear = node;
+	}
+
+	else
+	{
+		pipe_client_rear->next = node;
+		pipe_client_rear = node;
+	}
+	
+}
+
+void delete_pipe(pipe_node *node)
+{
+	extern pipe_node *pipe_client_front;
+	extern pipe_node *pipe_client_rear;
+	pipe_node *temp = pipe_client_front;
+	pipe_node *pre = NULL;
+
+	while (temp != NULL)
+	{
+		if (temp == node)
+		{
+			if (pre == NULL)
+			{
+				pipe_client_front = temp->next;
+				if (pipe_client_front == NULL)
+					pipe_client_rear = NULL;
+			}
+
+			else
+			{
+				pre->next = temp->next;
+				if (temp == pipe_client_rear)
+					pipe_client_rear = pre;
+			}
+
+			break;
+		}
+
+		else
+		{	
+			pre = temp;
+			temp = temp->next;
+		}
 	}
 }

@@ -57,8 +57,12 @@ void parse(user_node *sfd)
 				node->arg[4] = NULL;
 				node->arg_count = 1;
 				node->pip_count = 0;
+				node->pip_process_count_in = 0;
+				node->pip_process_count_out = 0;
 				node->is_init = 1;
 				node->is_new = 0;
+				node->is_pipe_in = 0;
+				node->is_pipe_out = 0;
 				node->type = 0;
 				node->file = NULL;
 				node->next = NULL;
@@ -118,6 +122,26 @@ void parse(user_node *sfd)
 			node->type = ISPIPEERR;
 			node->pip_count = atoi(current_node->token + 1);
 			push_cmd(&(sfd->user_cmd_front), &(sfd->user_cmd_rear), &node);
+		}
+
+		else if (type == PIPEPOUT)
+		{
+			if (next_type == NEWLINE)
+				node->is_new = 1;
+			node->is_pipe_out = 1;
+			node->pip_process_count_out = atoi(current_node->token + 1);
+			push_cmd(&(sfd->user_cmd_front), &(sfd->user_cmd_rear), &node);
+		}
+
+		else if (type == PIPEPIN)
+		{
+			if (next_type == NEWLINE)
+			{
+				node->is_new = 1;
+				push_cmd(&(sfd->user_cmd_front), &(sfd->user_cmd_rear), &node);
+			}
+			node->is_pipe_in = 1;
+			node->pip_process_count_in = atoi(current_node->token + 1);
 		}
 
 		if (last_node != NULL)

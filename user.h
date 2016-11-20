@@ -5,6 +5,7 @@
 
 struct _user
 {
+	int ID;
 	char *name;
 	int user_fd;
 	char env[256][1024];
@@ -29,5 +30,6 @@ void push_user(user_node **front, user_node **rear, user_node *node);
 void remove_user(user_node *node);
 void unlink_user(user_node **front, user_node **rear, user_node *node);
 void broadcast_message(user_node *front, const char *m);
+user_node *search_name(user_node *front, int id);
 
 #endif

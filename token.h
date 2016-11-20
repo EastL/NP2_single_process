@@ -7,6 +7,8 @@
 #define PIPEN 3
 #define PIPERR 4
 #define NEWLINE 5
+#define PIPEPOUT 6
+#define PIPEPIN 7
 
 struct __token
 {

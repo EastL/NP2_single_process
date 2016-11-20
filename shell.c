@@ -18,6 +18,10 @@
 extern user_node *user_list_front;
 extern user_node *user_list_rear;
 
+//pipe process node
+pipe_node *pipe_client_front = NULL;
+pipe_node *pipe_client_rear = NULL;
+
 int shell(user_node *client_fd)
 {
 	char *shellsign = "% ";
@@ -85,7 +89,7 @@ int shell(user_node *client_fd)
 
 		else if (strncmp(current_cmd->cmd, "who", 3) == 0)
 		{
-			char *title = "<sockd>\t<nickname>\t<IP/port>\t\t<indicate me>\n";
+			char *title = "<ID>\t<nickname>\t<IP/port>\t<indicate me>\n";
 			write(client_fd->user_fd, title, strlen(title));
 
 			user_node *temp_who = user_list_front;
@@ -94,15 +98,9 @@ int shell(user_node *client_fd)
 				char *content = malloc(sizeof(char) * 100);
 				memset(content, 0, 100);
 				if (temp_who == client_fd)
-					if (strlen(temp_who->name) < 8)
-						sprintf(content, "%d\t%s\t\t%s/%d\t\t%s\n", temp_who->user_fd, temp_who->name, temp_who->ip, temp_who->port, "<- me");
-					else
-						sprintf(content, "%d\t%s\t%s/%d\t\t%s\n", temp_who->user_fd, temp_who->name, temp_who->ip, temp_who->port, "<- me");
+					sprintf(content, "%d\t%s\t%s/%d\t%s\n", temp_who->ID, temp_who->name, temp_who->ip, temp_who->port, "<- me");
 				else
-					if (strlen(temp_who->name) < 8)
-						sprintf(content, "%d\t\t%s\t%s/%d\n", temp_who->user_fd, temp_who->name, temp_who->ip, temp_who->port);
-					else
-						sprintf(content, "%d\t%s\t%s/%d\n", temp_who->user_fd, temp_who->name, temp_who->ip, temp_who->port);
+					sprintf(content, "%d\t%s\t%s/%d\n", temp_who->ID, temp_who->name, temp_who->ip, temp_who->port);
 					
 				write(client_fd->user_fd, content, strlen(content));
 				temp_who = temp_who->next;
@@ -301,8 +299,47 @@ int shell(user_node *client_fd)
 
 			else
 			{
-				//printf("next:%s\n", current_cmd->next->cmd);
-				execute_node(current_cmd, client_fd, &next_pipe_num);
+				int exe_ret;
+				exe_ret = execute_node(current_cmd, client_fd, &next_pipe_num);
+
+				if (exe_ret != 0)
+				{
+					char *search_pip = malloc(sizeof(char) * 100);
+					memset(search_pip, 0, 100);
+
+					if (exe_ret == -1)
+					{
+						sprintf(search_pip, "*** Error: the pipe #%d->#%d does not exist yet. ***\n", current_cmd->pip_process_count_in, client_fd->ID);
+						write(client_fd->user_fd, search_pip, strlen(search_pip));
+						decress_count(&(client_fd->user_pipe_front), &(client_fd->user_pipe_rear));
+					}
+
+					else if (exe_ret == -2)
+					{
+						sprintf(search_pip, "*** Error: the pipe #%d->#%d already exist. ***\n", client_fd->ID, current_cmd->pip_process_count_out);
+						write(client_fd->user_fd, search_pip, strlen(search_pip));
+						decress_count(&(client_fd->user_pipe_front), &(client_fd->user_pipe_rear));
+					}
+
+					else if (exe_ret == 2)
+					{
+						user_node *target = search_name(user_list_front, current_cmd->pip_process_count_out);
+						sprintf(search_pip, "*** %s (#%d) just piped cmd to %s (#%d) ***", client_fd->name, client_fd->ID, target->name, current_cmd->pip_process_count_out);
+						broadcast_message(user_list_front, search_pip);
+						sign = 0;
+					}
+
+					else if (exe_ret == 1)
+					{
+						user_node *target = search_name(user_list_front, current_cmd->pip_process_count_in);
+						sprintf(search_pip, "*** %s (#%d) just received from %s (#%d) by cmd ***", client_fd->name, client_fd->ID, target->name, current_cmd->pip_process_count_in);
+						broadcast_message(user_list_front, search_pip);
+						sign = 0;
+					}
+					
+					free(search_pip);
+				}
+				
 				free_cmd(current_cmd);
 				current_cmd = pull_cmd(&(client_fd->user_cmd_front), &(client_fd->user_cmd_rear));
 			}
@@ -321,6 +358,7 @@ int execute_node(cmd_node *node, user_node *client_fd, int *next_n)
 	int stderrfd = -1;
 	int pipe_n = 0;
 	int pipe_err = 0;
+	int ret_p = 0;
 
 	if (node->is_init)
 	{
@@ -331,19 +369,55 @@ int execute_node(cmd_node *node, user_node *client_fd, int *next_n)
 			stdinfd = ch_node->infd;
 			close(ch_node->outfd);
 		}
-/*
-		pipe_node *cherr_node = NULL;
-		cherr_node = check(0, 1);
-		if (cherr_node != NULL)
-		{
-			stdinfd = cherr_node->infd;
-			close(cherr_node->outfd);
-		}
-*/
 	}
 
 	else
 		stdinfd = *next_n;
+
+	if (node->is_pipe_in)
+	{
+		pipe_node *search = search_pipe(node->pip_process_count_in, client_fd->ID);
+		if (search == NULL)
+		{
+			return -1;
+		}
+
+		stdinfd = search->infd;
+		delete_pipe(search);
+		close(search->outfd);
+		ret_p = 1;
+	}
+
+	if (node->is_pipe_out)
+	{
+		printf("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n");
+		pipe_node *search = search_pipe(client_fd->ID, node->pip_process_count_out);
+		if (search == NULL)
+		{
+			search = malloc(sizeof(pipe_node));
+			search->from = client_fd->ID;
+			search->to = node->pip_process_count_out;
+			
+			int pipep[2];
+			pipe(pipep);
+
+			search->outfd = pipep[1];
+			search->infd = pipep[0];
+			search->next = NULL;
+
+			put_pipe(search);
+			printf("put node:%x\n", search);
+			printf("front:%x\n", pipe_client_front);
+		}
+
+		else
+		{
+			printf("no NULL:%x\n", search);
+			return -2;
+		}
+		stdoutfd = search->outfd;
+		ret_p = 2;
+	}
 
 	if (node->type == ISPIPE)
 	{
@@ -465,7 +539,8 @@ int execute_node(cmd_node *node, user_node *client_fd, int *next_n)
 		int t;
 		waitpid(pid, &t, 0);
 	}
-	return 0;
+	printf("ret_p:%d\n", ret_p);
+	return ret_p;
 }
 
 char *trick(char *str)
