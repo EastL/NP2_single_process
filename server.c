@@ -62,7 +62,7 @@ int passivesock(const char *service, const char *transport, int qlen)
 
 int main()
 {
-	char *welcome = "****************************************\n** Welcome to the information server. **\n****************************************\n% ";
+	char *welcome = "****************************************\n** Welcome to the information server. **\n****************************************\n";
 	//kill zombie
 	signal(SIGCHLD, wait4_child);
 
@@ -107,6 +107,10 @@ int main()
 			}
 
 			printf("accept %d\n", clientfd);
+			char adr[20];
+			inet_ntop(AF_INET, &(client_socket.sin_addr), adr, 20);
+			printf("accept address: %s\n", adr);
+			printf("accept port: %d\n", ntohs(client_socket.sin_port));
 			//add client info
 			user_node *user = malloc(sizeof(user_node));
 			memset(user, 0, sizeof(user_node));
@@ -124,6 +128,9 @@ int main()
 			user->user_pipe_rear = NULL;
 			user->user_cmd_front = NULL;
 			user->user_cmd_rear = NULL;
+			bzero(user->ip, 21);
+			strcpy(user->ip, adr);
+			user->port = ntohs(client_socket.sin_port);
 			
 			user->next = NULL;
 			
@@ -140,6 +147,12 @@ int main()
 			
 
 			//broadcast
+			char *bro_msg = malloc(sizeof(char) * 80);
+			memset(bro_msg, 0, 80);
+
+			sprintf(bro_msg, "*** User '(no name)' entered from %s/%d. ***", user->ip, user->port);
+			broadcast_message(user_list_front, bro_msg);
+
 		
 			//set afds
 			FD_SET(clientfd, &afds);
@@ -164,8 +177,17 @@ int main()
 						printf("front:0x%x\n", user_list_front);
 						printf("front next:0x%x\n", user_list_front->next);
 						printf("rear:0x%x\n", user_list_rear);
+
 						close(active_user->user_fd);
 						unlink_user(&user_list_front, &user_list_rear, active_user);
+
+						//brocast
+						char *leave_msg = malloc(sizeof(char) * 50);
+						memset(leave_msg, 0, 50);
+
+						sprintf(leave_msg, "*** User '%s' left. ***", active_user->name);
+						broadcast_message(user_list_front, leave_msg);
+
 						FD_CLR(active_user->user_fd, &afds);
 						user_node *temp_user = active_user;
 						active_user = active_user->next;

@@ -11,6 +11,9 @@ struct _user
 	char envval[256][1024];
 	int env_num;
 
+	char ip[21];
+	unsigned short port;
+
 	pipe_node *user_pipe_front;
 	pipe_node *user_pipe_rear;
 
@@ -25,5 +28,6 @@ typedef struct _user user_node;
 void push_user(user_node **front, user_node **rear, user_node *node);
 void remove_user(user_node *node);
 void unlink_user(user_node **front, user_node **rear, user_node *node);
+void broadcast_message(user_node *front, const char *m);
 
 #endif

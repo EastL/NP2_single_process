@@ -85,9 +85,14 @@ void unlink_user(user_node **front, user_node **rear, user_node *node)
 	}
 }
 
-/*
-void broadcast_message(const char *m)
+void broadcast_message(user_node *front, const char *m)
 {
+	user_node *bro_node = front;
 	
+	while (bro_node != NULL)
+	{
+		write(bro_node->user_fd, m, strlen(m));
+		write(bro_node->user_fd, "\n% ", 3);
+		bro_node = bro_node->next;
+	}
 }
-*/
