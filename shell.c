@@ -40,6 +40,7 @@ int shell(user_node *client_fd)
 	cmd_node *current_cmd = pull_cmd(&(client_fd->user_cmd_front), &(client_fd->user_cmd_rear));
 
 	int next_pipe_num = 0;
+	int sign = 1;
 
 	while (current_cmd != NULL)
 	{
@@ -49,6 +50,7 @@ int shell(user_node *client_fd)
 			{
 				char *ts = "Please give args.\n";
 				write(client_fd->user_fd, ts, strlen(ts));
+				decress_count(&(client_fd->user_pipe_front), &(client_fd->user_pipe_rear));
 				current_cmd = pull_cmd(&(client_fd->user_cmd_front), &(client_fd->user_cmd_rear));
 				continue;
 			}
@@ -92,14 +94,134 @@ int shell(user_node *client_fd)
 				char *content = malloc(sizeof(char) * 100);
 				memset(content, 0, 100);
 				if (temp_who == client_fd)
-					sprintf(content, "%d\t%s\t%s/%d\t\t%s\n", temp_who->user_fd, temp_who->name, temp_who->ip, temp_who->port, "<- me");
+					if (strlen(temp_who->name) < 8)
+						sprintf(content, "%d\t%s\t\t%s/%d\t\t%s\n", temp_who->user_fd, temp_who->name, temp_who->ip, temp_who->port, "<- me");
+					else
+						sprintf(content, "%d\t%s\t%s/%d\t\t%s\n", temp_who->user_fd, temp_who->name, temp_who->ip, temp_who->port, "<- me");
 				else
-					sprintf(content, "%d\t%s\t%s/%d\n", temp_who->user_fd, temp_who->name, temp_who->ip, temp_who->port);
+					if (strlen(temp_who->name) < 8)
+						sprintf(content, "%d\t\t%s\t%s/%d\n", temp_who->user_fd, temp_who->name, temp_who->ip, temp_who->port);
+					else
+						sprintf(content, "%d\t%s\t%s/%d\n", temp_who->user_fd, temp_who->name, temp_who->ip, temp_who->port);
 					
 				write(client_fd->user_fd, content, strlen(content));
 				temp_who = temp_who->next;
+				free(content);
 			}
 			
+			decress_count(&(client_fd->user_pipe_front), &(client_fd->user_pipe_rear));
+
+			current_cmd = pull_cmd(&(client_fd->user_cmd_front), &(client_fd->user_cmd_rear));
+		}
+
+		else if (strncmp(current_cmd->cmd, "name", 4) == 0)
+		{
+			if (current_cmd->arg[1] == NULL)
+			{
+				char *ts = "Please give args.\n";
+				write(client_fd->user_fd, ts, strlen(ts));
+				fflush(stdout);
+				decress_count(&(client_fd->user_pipe_front), &(client_fd->user_pipe_rear));
+				current_cmd = pull_cmd(&(client_fd->user_cmd_front), &(client_fd->user_cmd_rear));
+				continue;
+			}
+
+			int check_name = 0;
+			user_node *search_name = user_list_front;
+			while (search_name != NULL)
+			{
+				if (strcmp(search_name->name, current_cmd->arg[1]) == 0)
+				{
+					check_name = 1;
+					break;
+				}
+				search_name = search_name->next;
+			}
+
+			if (check_name)
+			{
+				char *name_repeat = malloc(sizeof(char) * 80);
+				memset(name_repeat, 0, 80);
+
+				sprintf(name_repeat, "*** User '%s' already exists. ***\n", current_cmd->arg[1]);
+				write(client_fd->user_fd, name_repeat, strlen(name_repeat));
+				free(name_repeat);
+				decress_count(&(client_fd->user_pipe_front), &(client_fd->user_pipe_rear));
+
+				current_cmd = pull_cmd(&(client_fd->user_cmd_front), &(client_fd->user_cmd_rear));
+				continue;
+			}
+
+			client_fd->name = malloc(strlen(current_cmd->arg[1]) + 1);
+			memset(client_fd->name, 0, (strlen(current_cmd->arg[1]) + 1));
+			strcpy(client_fd->name, current_cmd->arg[1]);
+
+			char *bro_name = malloc(sizeof(char) * 100);
+			memset(bro_name, 0, 100);
+
+			sprintf(bro_name, "*** User from %s/%d is named '%s'. ***", client_fd->ip, client_fd->port, client_fd->name);
+			broadcast_message(user_list_front, bro_name);
+			sign = 0;
+			free(bro_name);
+			bro_name = NULL;
+			
+			decress_count(&(client_fd->user_pipe_front), &(client_fd->user_pipe_rear));
+
+			current_cmd = pull_cmd(&(client_fd->user_cmd_front), &(client_fd->user_cmd_rear));
+		}
+
+		else if (strncmp(current_cmd->cmd, "tell", 4) == 0)
+		{
+			if (current_cmd->arg[1] == NULL || current_cmd->arg[2] == NULL)
+			{
+				char *ts = "Please give args.\n";
+				write(client_fd->user_fd, ts, strlen(ts));
+				decress_count(&(client_fd->user_pipe_front), &(client_fd->user_pipe_rear));
+				current_cmd = pull_cmd(&(client_fd->user_cmd_front), &(client_fd->user_cmd_rear));
+				continue;
+			}
+
+			int sock_fd = atoi(current_cmd->arg[1]);
+			char *tell_msg = malloc(sizeof(char) * 1024);
+			memset(tell_msg, 0, 1024);
+
+			sprintf(tell_msg, "*** (%s) told you ***: %s\n", client_fd->name, current_cmd->arg[2]);
+
+			if (write(sock_fd, tell_msg, strlen(tell_msg)) < 0)
+			{
+				char *tell_err = malloc(sizeof(char) * 100);
+				memset(tell_err, 0, 100);
+				sprintf(tell_err, "*** Error: user #(%d) does not exist yet. ***\n", sock_fd);
+
+				write(client_fd->user_fd, tell_err, strlen(tell_err));
+				free(tell_err);
+			}
+
+			free(tell_msg);
+			decress_count(&(client_fd->user_pipe_front), &(client_fd->user_pipe_rear));
+
+			current_cmd = pull_cmd(&(client_fd->user_cmd_front), &(client_fd->user_cmd_rear));
+		}
+
+		else if (strncmp(current_cmd->cmd, "yell", 4) == 0)
+		{
+			if (current_cmd->arg[1] == NULL)
+			{
+				char *ts = "Please give args.\n";
+				write(client_fd->user_fd, ts, strlen(ts));
+				fflush(stdout);
+				decress_count(&(client_fd->user_pipe_front), &(client_fd->user_pipe_rear));
+				current_cmd = pull_cmd(&(client_fd->user_cmd_front), &(client_fd->user_cmd_rear));
+				continue;
+			}
+
+			char *yell_msg = malloc(sizeof(char) * 1024);
+			memset(yell_msg, 0, 1024);
+
+			sprintf(yell_msg, "*** %s yelled ***: %s", client_fd->name, current_cmd->arg[1]);
+			broadcast_message(user_list_front, yell_msg);
+			free(yell_msg);
+			sign = 0;
 			decress_count(&(client_fd->user_pipe_front), &(client_fd->user_pipe_rear));
 
 			current_cmd = pull_cmd(&(client_fd->user_cmd_front), &(client_fd->user_cmd_rear));
@@ -112,6 +234,7 @@ int shell(user_node *client_fd)
 				char *ts = "Please give args.\n";
 				write(client_fd->user_fd, ts, strlen(ts));
 				fflush(stdout);
+				decress_count(&(client_fd->user_pipe_front), &(client_fd->user_pipe_rear));
 				current_cmd = pull_cmd(&(client_fd->user_cmd_front), &(client_fd->user_cmd_rear));
 				continue;
 			}
@@ -137,6 +260,7 @@ int shell(user_node *client_fd)
 			{
 				char *ts = "Please give args.\n";
 				write(client_fd->user_fd, ts, strlen(ts));
+				decress_count(&(client_fd->user_pipe_front), &(client_fd->user_pipe_rear));
 				current_cmd = pull_cmd(&(client_fd->user_cmd_front), &(client_fd->user_cmd_rear));
 				continue;
 			}
@@ -185,7 +309,8 @@ int shell(user_node *client_fd)
 		}
 	}
 
-	write(client_fd->user_fd, shellsign, strlen(shellsign));
+	if (sign)
+		write(client_fd->user_fd, shellsign, strlen(shellsign));
 	return 0;
 }
 
