@@ -147,8 +147,10 @@ int main()
 			user->user_cmd_front = NULL;
 			user->user_cmd_rear = NULL;
 			bzero(user->ip, 21);
-			strcpy(user->ip, adr);
-			user->port = ntohs(client_socket.sin_port);
+			//strcpy(user->ip, adr);
+			strcpy(user->ip, "CGILAB");
+			//user->port = ntohs(client_socket.sin_port);
+			user->port = 511;
 			
 			user->next = NULL;
 			

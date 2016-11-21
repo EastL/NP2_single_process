@@ -179,6 +179,23 @@ int shell(user_node *client_fd)
 				continue;
 			}
 
+			int merge_tell = current_cmd->arg_count;
+			char *marg = malloc(512);
+			memset(marg, 0, 512);
+			int merge_count;
+
+			strncpy(marg, current_cmd->arg[2], strlen(current_cmd->arg[2]));
+			if (merge_tell > 3)
+			{
+				for (merge_count = 3; merge_count < merge_tell; merge_count++)
+				{
+					printf("arggg : %s\n", current_cmd->arg[merge_count]);
+					//sprintf(marg, "%s %s", marg, current_cmd->arg[merge_count]);
+					strcat(marg, " ");
+					strcat(marg, current_cmd->arg[merge_count]);
+				}
+			}
+
 			int Id = atoi(current_cmd->arg[1]);
 			user_node *tell_user = search_name(user_list_front, Id);
 
@@ -198,7 +215,7 @@ int shell(user_node *client_fd)
 				char *tell_msg = malloc(sizeof(char) * 1024);
 				memset(tell_msg, 0, 1024);
 
-				sprintf(tell_msg, "*** (%s) told you ***: %s\n", client_fd->name, current_cmd->arg[2]);
+				sprintf(tell_msg, "*** (%s) told you ***: %s\n", client_fd->name, marg);
 				write(tell_user->user_fd, tell_msg, strlen(tell_msg));
 				free(tell_msg);
 			}
@@ -219,10 +236,27 @@ int shell(user_node *client_fd)
 				continue;
 			}
 
+			int merge_tell = current_cmd->arg_count;
+			char *marg = malloc(512);
+			memset(marg, 0, 512);
+			int merge_count;
+
+			strncpy(marg, current_cmd->arg[1], strlen(current_cmd->arg[2]));
+			if (merge_tell > 2)
+			{
+				for (merge_count = 2; merge_count < merge_tell; merge_count++)
+				{
+					printf("arggg : %s\n", current_cmd->arg[merge_count]);
+					//sprintf(marg, "%s %s", marg, current_cmd->arg[merge_count]);
+					strcat(marg, " ");
+					strcat(marg, current_cmd->arg[merge_count]);
+				}
+			}
+
 			char *yell_msg = malloc(sizeof(char) * 1024);
 			memset(yell_msg, 0, 1024);
 
-			sprintf(yell_msg, "*** %s yelled ***: %s", client_fd->name, current_cmd->arg[1]);
+			sprintf(yell_msg, "*** %s yelled ***: %s", client_fd->name, marg);
 			broadcast_message(user_list_front, yell_msg);
 			free(yell_msg);
 			sign = 0;
