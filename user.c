@@ -98,6 +98,21 @@ void broadcast_message(user_node *front, const char *m)
 	}
 }
 
+int is_id_exist(user_node *front, int id)
+{
+	int ret = -1;
+	user_node *temp = front;
+	while (temp != NULL)
+	{
+		if (id == temp->ID)
+			ret = 1;
+
+		temp = temp->next;
+	}
+
+	return ret;
+}
+
 user_node *search_name(user_node *front, int id)
 {
 	user_node *bro_node = front;
