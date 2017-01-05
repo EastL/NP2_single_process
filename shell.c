@@ -99,7 +99,7 @@ int shell(user_node *client_fd)
 				char *content = malloc(sizeof(char) * 100);
 				memset(content, 0, 100);
 				if (temp_who == client_fd)
-					sprintf(content, "%d\t%s\t%s/%d\t%s\n", temp_who->ID, temp_who->name, temp_who->ip, temp_who->port, "<- me");
+					sprintf(content, "%d\t%s\t%s/%d\t%s\n", temp_who->ID, temp_who->name, temp_who->ip, temp_who->port, "<-me");
 				else
 					sprintf(content, "%d\t%s\t%s/%d\n", temp_who->ID, temp_who->name, temp_who->ip, temp_who->port);
 					
