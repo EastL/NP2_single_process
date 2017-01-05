@@ -93,7 +93,7 @@ void broadcast_message(user_node *front, const char *m)
 	while (bro_node != NULL)
 	{
 		write(bro_node->user_fd, m, strlen(m));
-		write(bro_node->user_fd, "\n% ", 3);
+		write(bro_node->user_fd, "\n", 1);
 		bro_node = bro_node->next;
 	}
 }

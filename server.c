@@ -173,6 +173,7 @@ int main()
 			sprintf(bro_msg, "*** User '(no name)' entered from %s/%d. ***", user->ip, user->port);
 			broadcast_message(user_list_front, bro_msg);
 
+			write(clientfd, "% ", 2);
 		
 			//set afds
 			FD_SET(clientfd, &afds);
@@ -204,12 +205,6 @@ int main()
 						//clear client ID
 						clientID[active_user->ID] = 0;
 
-						//brocast
-						char *leave_msg = malloc(sizeof(char) * 50);
-						memset(leave_msg, 0, 50);
-
-						sprintf(leave_msg, "*** User '%s' left. ***", active_user->name);
-						broadcast_message(user_list_front, leave_msg);
 
 						FD_CLR(active_user->user_fd, &afds);
 						user_node *temp_user = active_user;

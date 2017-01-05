@@ -30,7 +30,8 @@ int shell(user_node *client_fd)
 	cmd_node *cmd_list;
 
 	//set env
-	for (int c = 0; c < client_fd->env_num; c++)
+	int c;
+	for (c = 0; c < client_fd->env_num; c++)
 		setenv(client_fd->env[c], client_fd->envval[c], 1);
 
 	line = malloc(sizeof(char) * 10010);
@@ -61,7 +62,7 @@ int shell(user_node *client_fd)
 
 			//write to user info
 			int cmp = 0;
-			for (int c = 0; c < client_fd->env_num; c++)
+			for (c = 0; c < client_fd->env_num; c++)
 			{
 				if (strcmp(client_fd->env[c], current_cmd->arg[1]) == 0)
 				{
@@ -314,6 +315,12 @@ int shell(user_node *client_fd)
 		
 		else if (strncmp(current_cmd->cmd, "exit", 4) == 0)
 		{
+			//brocast
+			char *leave_msg = malloc(sizeof(char) * 50);
+			memset(leave_msg, 0, 50);
+
+			sprintf(leave_msg, "*** User '%s' left. ***", client_fd->name);
+			broadcast_message(user_list_front, leave_msg);
 			return -1;
 		}
 
@@ -363,14 +370,14 @@ int shell(user_node *client_fd)
 
 					else if (exe_ret == -3)
 					{
-						sprintf(search_pip, "*** Error: user #%d does not exist. ***\n", client_fd->ID, current_cmd->pip_process_count_out);
+						sprintf(search_pip, "*** Error: user #%d does not exist. ***\n", client_fd->ID);
 						write(client_fd->user_fd, search_pip, strlen(search_pip));
 						decress_count(&(client_fd->user_pipe_front), &(client_fd->user_pipe_rear));
 					}
 
 					else if (exe_ret == -4)
 					{
-						sprintf(search_pip, "*** Error: user #%d does not exist. ***\n", client_fd->ID, current_cmd->pip_process_count_in);
+						sprintf(search_pip, "*** Error: user #%d does not exist. ***\n", client_fd->ID);
 						write(client_fd->user_fd, search_pip, strlen(search_pip));
 						decress_count(&(client_fd->user_pipe_front), &(client_fd->user_pipe_rear));
 					}
@@ -411,8 +418,8 @@ int shell(user_node *client_fd)
 		}
 	}
 
-	if (sign)
-		write(client_fd->user_fd, shellsign, strlen(shellsign));
+	//if (sign)
+	write(client_fd->user_fd, shellsign, strlen(shellsign));
 	return 0;
 }
 
