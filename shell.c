@@ -207,7 +207,7 @@ int shell(user_node *client_fd)
 			{
 				char *tell_err = malloc(sizeof(char) * 100);
 				memset(tell_err, 0, 100);
-				sprintf(tell_err, "*** Error: user #(%d) does not exist yet. ***\n", Id);
+				sprintf(tell_err, "*** Error: user #%d does not exist yet. ***\n", Id);
 
 				write(client_fd->user_fd, tell_err, strlen(tell_err));
 				free(tell_err);
@@ -218,7 +218,7 @@ int shell(user_node *client_fd)
 				char *tell_msg = malloc(sizeof(char) * 1024);
 				memset(tell_msg, 0, 1024);
 
-				sprintf(tell_msg, "*** (%s) told you ***: %s\n", client_fd->name, current_cmd->arg[2]);
+				sprintf(tell_msg, "*** %s told you ***: %s\n", client_fd->name, current_cmd->arg[2]);
 				write(tell_user->user_fd, tell_msg, strlen(tell_msg));
 				free(tell_msg);
 			}
@@ -261,7 +261,7 @@ int shell(user_node *client_fd)
 			char *yell_msg = malloc(sizeof(char) * 1024);
 			memset(yell_msg, 0, 1024);
 
-			sprintf(yell_msg, "*** %s yelled ***: %s", client_fd->name, current_cmd->arg[1]);
+			sprintf(yell_msg, "*** %s yelled ***:%s", client_fd->name, current_cmd->arg[1]);
 			broadcast_message(user_list_front, yell_msg);
 			free(yell_msg);
 			sign = 0;
