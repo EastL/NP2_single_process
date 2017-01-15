@@ -108,7 +108,7 @@ void tokenizer(int cfd)
 		tnode->token = malloc(sizeof(char) * (strlen(buf) - 4));
 		memset(tnode->token, 0, (strlen(buf) - 4));
 
-		strcpy(tnode->token, (char*)(&buf[4]));
+		strcpy(tnode->token, (char*)(&buf[5]));
 		printf("tell or yell arg:%s\n", tnode->token);
 		tnode->token_type = CMDF;
 		tnode->next = NULL;
@@ -143,7 +143,7 @@ void tokenizer(int cfd)
 		tnode->token = malloc(sizeof(char) * (strlen(buf) - 6));
 		memset(tnode->token, 0, (strlen(buf) - 6));
 
-		strcpy(tnode->token, (char*)(&buf[6]));
+		strcpy(tnode->token, (char*)(&buf[7]));
 		printf("tell or yell arg:%s\n", tnode->token);
 		tnode->token_type = CMDF;
 		tnode->next = NULL;

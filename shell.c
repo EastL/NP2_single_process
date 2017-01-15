@@ -390,10 +390,10 @@ int shell(user_node *client_fd)
 					{
 						user_node *target = search_name(user_list_front, current_cmd->pip_process_count_in);
 						sprintf(search_pip, "*** %s (#%d) just received from %s (#%d) by '%s' ***", client_fd->name, client_fd->ID, target->name, current_cmd->pip_process_count_in, current_cmd->buf);
-						broadcast_message(client_fd, search_pip);
+						broadcast_message(user_list_front, search_pip);
 						user_node *target1 = search_name(user_list_front, current_cmd->pip_process_count_out);
 						sprintf(search_pip, "*** %s (#%d) just piped '%s' to %s (#%d) ***", client_fd->name, client_fd->ID, current_cmd->buf, target1->name, current_cmd->pip_process_count_out);
-						broadcast_message(client_fd, search_pip);
+						broadcast_message(user_list_front, search_pip);
 						sign = 0;
 					}
 
