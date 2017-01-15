@@ -374,14 +374,14 @@ int shell(user_node *client_fd)
 
 					else if (exe_ret == -3)
 					{
-						sprintf(search_pip, "*** Error: user #%d does not exist. ***\n", client_fd->ID);
+						sprintf(search_pip, "*** Error: user #%d does not exist. ***\n", current_cmd->pip_process_count_out);
 						write(client_fd->user_fd, search_pip, strlen(search_pip));
 						decress_count(&(client_fd->user_pipe_front), &(client_fd->user_pipe_rear));
 					}
 
 					else if (exe_ret == -4)
 					{
-						sprintf(search_pip, "*** Error: user #%d does not exist. ***\n", client_fd->ID);
+						sprintf(search_pip, "*** Error: user #%d does not exist. ***\n", current_cmd->pip_process_count_in);
 						write(client_fd->user_fd, search_pip, strlen(search_pip));
 						decress_count(&(client_fd->user_pipe_front), &(client_fd->user_pipe_rear));
 					}
@@ -389,10 +389,10 @@ int shell(user_node *client_fd)
 					else if (exe_ret == 5)
 					{
 						user_node *target = search_name(user_list_front, current_cmd->pip_process_count_out);
-						sprintf(search_pip, "*** %s (#%d) just received from %s (#%d) by cmd ***", client_fd->name, client_fd->ID, target->name, current_cmd->pip_process_count_in);
+						sprintf(search_pip, "*** %s (#%d) just received from %s (#%d) by '%s' ***", client_fd->name, client_fd->ID, target->name, current_cmd->pip_process_count_in, current_cmd->buf);
 						broadcast_message(client_fd, search_pip);
 						user_node *target1 = search_name(user_list_front, current_cmd->pip_process_count_in);
-						sprintf(search_pip, "*** %s (#%d) just piped cmd to %s (#%d) ***", client_fd->name, client_fd->ID, target1->name, current_cmd->pip_process_count_out);
+						sprintf(search_pip, "*** %s (#%d) just piped '%s' to %s (#%d) ***", client_fd->name, client_fd->ID, current_cmd->buf, target1->name, current_cmd->pip_process_count_out);
 						broadcast_message(client_fd, search_pip);
 						sign = 0;
 					}
@@ -400,7 +400,7 @@ int shell(user_node *client_fd)
 					else if (exe_ret == 2)
 					{
 						user_node *target = search_name(user_list_front, current_cmd->pip_process_count_out);
-						sprintf(search_pip, "*** %s (#%d) just piped cmd to %s (#%d) ***", client_fd->name, client_fd->ID, target->name, current_cmd->pip_process_count_out);
+						sprintf(search_pip, "*** %s (#%d) just piped '%s' to %s (#%d) ***", client_fd->name, client_fd->ID, current_cmd->buf, target->name, current_cmd->pip_process_count_out);
 						broadcast_message(user_list_front, search_pip);
 						sign = 0;
 					}
@@ -408,7 +408,7 @@ int shell(user_node *client_fd)
 					else if (exe_ret == 1)
 					{
 						user_node *target = search_name(user_list_front, current_cmd->pip_process_count_in);
-						sprintf(search_pip, "*** %s (#%d) just received from %s (#%d) by cmd ***", client_fd->name, client_fd->ID, target->name, current_cmd->pip_process_count_in);
+						sprintf(search_pip, "*** %s (#%d) just received from %s (#%d) by '%s' ***", client_fd->name, client_fd->ID, target->name, current_cmd->pip_process_count_in, current_cmd->buf);
 						broadcast_message(user_list_front, search_pip);
 						sign = 0;
 					}

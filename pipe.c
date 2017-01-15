@@ -100,6 +100,9 @@ pipe_node *search_pipe(int from, int to)
 	pipe_node *temp = pipe_client_front;
 	while (temp != NULL)
 	{
+		printf("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\n");
+		printf("from:%d\n", temp->from);
+		printf("to:%d\n", temp->to);
 		if (temp->from == from && temp->to == to)
 			break;
 		temp = temp->next;

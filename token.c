@@ -187,6 +187,9 @@ void tokenizer(int cfd)
 					token_array[i][strlen(token_array[i])-strip] = '\0';
 					strcpy(tnode->token, token_array[i]);
 					tnode->token_type = get_token_type(token_array[i]);
+					if (tnode->token_type == PIPEPOUT || tnode->token_type == PIPEPIN)
+						strcpy(tnode->buf, buf);
+					tnode->buf[strlen(buf)-1] = '\0';
 					tnode->next = NULL;
 					free(token_array[i]);
 					push_node(&tnode);
@@ -201,6 +204,10 @@ void tokenizer(int cfd)
 				memset(tnode->token, 0, (strlen(token_array[i]) + 1));
 				strcpy(tnode->token, token_array[i]);
 				tnode->token_type = get_token_type(token_array[i]);
+				if (tnode->token_type == PIPEPOUT || tnode->token_type == PIPEPIN)
+					strcpy(tnode->buf, buf);
+
+				tnode->buf[strlen(buf)-1] = '\0';
 				free(token_array[i]);
 				tnode->next = NULL;
 				push_node(&tnode);
